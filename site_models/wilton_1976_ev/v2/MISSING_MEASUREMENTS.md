@@ -1,4 +1,4 @@
-# Missing measurements: Wilton #1976 (as of 2026-10-20)
+# Missing measurements: Wilton #1976 (as of 2026-10-20, updated for brief v3)
 
 Nothing on this list was guessed in the model. Each item is shown as a placeholder, a ring, an empty collection or a label, and stays so until it is measured.
 
@@ -9,8 +9,8 @@ Nothing on this list was guessed in the model. Each item is shown as a placehold
 | # | Missing | Site | Who / how to get it | How to load it |
 |---|---|---|---|---|
 | 1 | Service size (A), voltage, phase at the source panel or transformer | S1–S4 | Panel and meter nameplates (photo); Eversource or NHEC work order | Fill the `notes` column in `field_points.csv` |
-| 2 | Transformer kVA and spare capacity; pad-mount at S1; 3 transformers at the mill | S1, S4 | Nameplate photo; utility engineer | `import_field_points.py` |
-| 3 | Pole and transformer positions; pole tags "5" and "Wilton Telco 3" | S4 (S2 street poles) | CompanyCam GPS, then drag onto the pole base in the lidar | `import_field_points.py` |
+| 2 | Transformer kVA and spare capacity. Mill pad-mount: Howard, serial 2211802515, kVA plate unreadable (INFERRED on the order of 1,000 kVA from weight; see `utilities/UTILITY_ITEMS.csv`). The three mill pole cans and the S1 pad-mount: kVA unknown. | S1, S4 | Eversource (give them the serial number); kVA stencils on the cans; S1 nameplate photo | `import_field_points.py` |
+| 3 | Pole and transformer positions. Pole tags "5" (PSNH) and "Wilton Telco 3" were read, but none is located, and it is unconfirmed whether tag 5 is on the three-can pole. | S4 (S2 street poles) | CompanyCam GPS through the API, then drag onto the pole base in the lidar; a wide shot tying tag 5 to its pole | `import_field_points.py` |
 | 4 | Real trench and bore routes and lengths | all | Walk the route with a measuring wheel; re-route the `TRENCH` curves after #3 | Edit the curves; the length label updates |
 | 5 | Existing underground (water, sewer, gas, telecom, storm) | all | Dig Safe ticket (811) before design; Town DPW / water works records | `import_field_points.py`, or digitise |
 | 6 | Meter / panel location and spare breaker spaces | S1, S3, S4 | Photo of the panel schedule | CSV notes |
@@ -56,3 +56,18 @@ Nothing on this list was guessed in the model. Each item is shown as a placehold
 |---|---|---|
 | 27 | RANH 5-year operating commitment (not on the NHDES page); the minimum of 2 ports per project (reported only locally) | RANH RFP / NHDES |
 | 28 | Which sites the Town wants in the first application (the $100k cap is 10 ports at $10k each) | Select Board / Jennifer |
+
+## Added from brief v3 (CompanyCam findings, 10/20 afternoon)
+
+| # | Missing | Site | Who / how to get it | How to load it |
+|---|---|---|---|---|
+| 29 | Mill service voltage (208Y/120 or 480Y/277) and ampacity. The meter (Form 9S, 4-wire wye, transformer-rated) makes 3-phase LIKELY (INFERRED), but the 120–480V meter rating doesn't fix the voltage. | S4 | Eversource; the main disconnect nameplate | CSV notes |
+| 30 | Positions for every CompanyCam photo. The public timeline shows neither GPS nor time. | all | CompanyCam API (read-only token), or an export with the original files | Photo layer (CSV / GeoJSON) |
+| 31 | Pad-mount clearance zones (Eversource label: 10 ft door side, 4 ft other sides) can't be drawn until the pad-mounts are located | S1, S4 | #3 and #30 | Automatic once located |
+| 32 | Overhead lines at the charger spots (height and route) | all | Look-up photos and a laser height; 2019 lidar wire candidates (INFERRED) | Utility layer |
+| 33 | Hydro channel sign text | S4 | A readable photo | Label |
+| 34 | Location of "Building #15" (street not confirmed) | ? | Street sign / house number photo | Control point |
+| 35 | Wheel and tape readings at each charger spot and along each trench path, with surface types for restoration | all | Next visit (photo list items 6–7) | Replaces the CALCULATED ESTIMATE trench lengths |
+| 36 | NEC edition in force for the permit. Sources point to the **2023 NEC**, but they disagree on the effective date (7/1/2025 vs 7/1/2026, transition to 1/1/2027). | all | Wilton building inspector | Trench / conduit tool setting |
+| 37 | Souhegan designated-river reach through Wilton (RSA 483) and whether NH Shoreland (RSA 483-B, 250 ft protected shoreland) applies to the Souhegan and Stony Brook reaches. All four layouts are within 250 ft of mapped water (CALCULATED from the NHD edge; the legal line is the reference line / high-water mark). | all | NHDES Rivers and Shoreland programs; SoRLAC | Environmental layer |
+

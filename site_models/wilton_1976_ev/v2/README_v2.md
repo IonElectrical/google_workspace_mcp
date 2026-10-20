@@ -17,7 +17,9 @@
 | `docs/MILL_ROOF.md` | Mill roof plane table and comparison with the 93k / 94k / 100k claims. |
 | `MISSING_MEASUREMENTS.md` | What could not be measured, and who or what can supply it. |
 | `SOURCE_LOG.md` | Every source with status, date and accuracy. |
-| `FIELD_CHECKLIST.md` | What to capture on site today. |
+| `NEXT_PHOTO_LIST.md` | Priority shot list for the next visit (replaces `FIELD_CHECKLIST.md`). |
+| `utilities/UTILITY_ITEMS.csv` | Utility items read from the CompanyCam photos: VERIFIED / INFERRED, confidence, evidence. None is located yet. |
+| `FIELD_CHECKLIST.md` | The 10/20 on-site capture list. |
 | `*.py` | The build pipeline, plus five import tools that also ship inside the .blend (Scripting tab). |
 | `web/Wilton_Downtown_Viewer.html` | Browser walkthrough of the same model (three.js): orbit, walk at 5.5 ft eye height, site jumps, layer toggles, click-to-identify, measure in ft. Opens offline in Chrome/Safari (needs internet once for three.js). A hosted copy was published as a private claude.ai page; share it from that page's Share menu. Rebuild with `export_web.py`. |
 

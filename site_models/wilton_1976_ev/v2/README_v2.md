@@ -19,7 +19,7 @@
 | `SOURCE_LOG.md` | Every source with status, date and accuracy. |
 | `FIELD_CHECKLIST.md` | What to capture on site today. |
 | `*.py` | The build pipeline, plus five import tools that also ship inside the .blend (Scripting tab). |
-| Web viewer | A browser walkthrough of the same model. The link is in the delivery message. |
+| `web/Wilton_Downtown_Viewer.html` | Browser walkthrough of the same model (three.js): orbit, walk at 5.5 ft eye height, site jumps, layer toggles, click-to-identify, measure in ft. Opens offline in Chrome/Safari (needs internet once for three.js). A hosted copy was published as a private claude.ai page; share it from that page's Share menu. Rebuild with `export_web.py`. |
 
 ## Coordinate frame (read this before measuring)
 
@@ -236,6 +236,7 @@ The brief asks for ~1 ft accuracy. Only Polycam / total-station capture, registe
 python prepare_downtown.py --cache CACHE --work WORK --nhd NHD_H_01070006_HU8_GPKG.gpkg --struct STRUCT_New_Hampshire_State_GPKG.gpkg
 python layouts.py --work WORK          # writes layouts.json + layouts.md (docs/SITE_LAYOUTS.md)
 python mill_roof.py --work WORK --cache CACHE   # writes mill_roof.json + MILL_ROOF.md
+python export_web.py --work WORK  # writes web/Wilton_Downtown_Viewer.html (~8 MB)
 # 2) Blender 4.5 (or pip bpy==4.5.x with "numpy<2"); --blosm = folder containing blosm/
 blender -b --factory-startup -P build_downtown_v2.py -- --work WORK --out blend --blosm ADDONS
 ```

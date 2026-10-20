@@ -21,6 +21,8 @@ How each source was checked:
 
 ## Links from the brief
 
+The brief reports that these worked from Edward's side on 10/20: the National Map Downloader, the 2025 tax-map PDF, the zoning-maps page, the FEMA MSC, OSM / Overpass, Blosm and BlenderGIS. They were blocked only from the build container, so the Mac steps in README_v2 §5 use them directly.
+
 | Link | Status 2026-10-20 | Replacement / note |
 |---|---|---|
 | granit.unh.edu | BLOCKED; index OK | Orthophoto (USGS NH 2021/22, 6-inch, 4-band, State Plane ft) is in the GRANIT Image Download Tool. The town zips are on `ftp.granit.unh.edu/GRANIT_Data/`. |

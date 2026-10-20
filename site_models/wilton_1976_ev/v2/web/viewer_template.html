@@ -1,0 +1,1009 @@
+<title>Wilton Downtown Walkthrough</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: survey field-book. The 3D model fills the screen; one instrument rail on the right
+   (a bottom sheet on phones) carries site jumps, mode, measurements, facts, layers and sources. */
+:root {
+  --bg: #e7ece9;
+  --panel: #f7f9f7;
+  --panel-2: #eef2ef;
+  --ink: #17211d;
+  --muted: #56645d;
+  --line: #cbd4ce;
+  --accent: #0d675f;
+  --accent-ink: #ffffff;
+  --warn: #b8321c;
+  --est: #9a6206;
+  --ok: #2a7239;
+  --ada: #1c57e6;
+  --lbl-ink: #ffffff;
+  --lbl-halo: rgba(12, 18, 16, 0.78);
+  --lbl-warn: #c8341e;
+  --lbl-est: #b97a10;
+  --font-display: "IBM Plex Sans Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --rail: 368px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1513; --panel: #161f1c; --panel-2: #1c2723; --ink: #e2e9e5; --muted: #95a59d; --line: #2b3732;
+    --accent: #4ebfb1; --accent-ink: #062320; --warn: #ff7c62; --est: #e6ae48; --ok: #70cf85; --ada: #85a8ff;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1513; --panel: #161f1c; --panel-2: #1c2723; --ink: #e2e9e5; --muted: #95a59d; --line: #2b3732;
+  --accent: #4ebfb1; --accent-ink: #062320; --warn: #ff7c62; --est: #e6ae48; --ok: #70cf85; --ada: #85a8ff;
+  color-scheme: dark;
+}
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--ink); font: 14px/1.45 var(--font-body); overflow: hidden; }
+#app { position: fixed; inset: 0; display: grid; grid-template-columns: minmax(0, 1fr) var(--rail); }
+#stage { position: relative; min-width: 0; overflow: hidden; background: #bcd2e4; }
+#view { display: block; width: 100%; height: 100%; touch-action: none; outline: none; }
+#labels { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.lbl { position: absolute; left: 0; top: 0; transform: translate(-50%, -100%); white-space: nowrap; font: 500 12px/1.25 var(--font-body);
+  color: var(--lbl-ink); text-shadow: 0 0 3px var(--lbl-halo), 0 0 6px var(--lbl-halo); will-change: transform; }
+.lbl.street { font: 500 11px/1.2 var(--font-display); letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.9; }
+.lbl.water { font: italic 500 12px/1.2 var(--font-body); color: #d6ecff; }
+.lbl.landmark { font-size: 11px; opacity: 0.92; }
+.lbl.site { font: 600 15px/1.2 var(--font-display); letter-spacing: 0.02em; background: rgba(13, 103, 95, 0.92); text-shadow: none; padding: 3px 8px; border-radius: 3px; }
+.lbl.warn, .lbl.est, .lbl.note, .lbl.roof { white-space: normal; width: max-content; max-width: 260px; text-shadow: none; padding: 3px 7px; border-radius: 3px; font-size: 11.5px; }
+.lbl.warn { background: var(--lbl-warn); }
+.lbl.est { background: var(--lbl-est); }
+.lbl.note { background: rgba(20, 28, 25, 0.82); }
+.lbl.roof { background: rgba(10, 92, 128, 0.88); }
+.lbl.trench { font: 500 11px/1.2 var(--font-mono); background: rgba(175, 32, 15, 0.9); text-shadow: none; padding: 1px 5px; border-radius: 2px; }
+
+/* HUD over the model */
+.hud { position: absolute; display: flex; gap: 8px; align-items: center; pointer-events: none; }
+#hud-tl { top: 12px; left: max(12px, env(safe-area-inset-left, 0px)); flex-direction: column; align-items: flex-start; gap: 6px; }
+#hud-bl { bottom: max(12px, env(safe-area-inset-bottom, 0px)); left: max(12px, env(safe-area-inset-left, 0px)); right: 12px; flex-wrap: wrap; }
+.chip-hud { pointer-events: auto; background: rgba(15, 22, 19, 0.78); color: #eef4f0; border-radius: 4px; padding: 5px 9px; font: 500 12px/1.3 var(--font-mono); font-variant-numeric: tabular-nums; }
+.brand { pointer-events: auto; background: rgba(15, 22, 19, 0.82); color: #eef4f0; border-radius: 4px; padding: 7px 11px 8px; max-width: min(78vw, 420px); }
+.brand b { display: block; font: 600 16px/1.15 var(--font-display); letter-spacing: 0.02em; }
+.brand span { display: block; font: 400 11.5px/1.35 var(--font-body); color: #b9c8c0; }
+#north { width: 46px; height: 46px; pointer-events: none; }
+#mode-hint { max-width: 520px; }
+#walkpad { position: absolute; right: 14px; bottom: max(64px, calc(env(safe-area-inset-bottom, 0px) + 52px)); display: grid; grid-template-columns: repeat(3, 52px); grid-template-rows: repeat(2, 52px); gap: 6px; }
+#walkpad button { background: rgba(15, 22, 19, 0.72); color: #fff; border: 1px solid rgba(255, 255, 255, 0.25); border-radius: 6px; font: 600 18px/1 var(--font-body); touch-action: none; }
+#walkpad .up { grid-column: 2; grid-row: 1; }
+#walkpad .left { grid-column: 1; grid-row: 2; }
+#walkpad .down { grid-column: 2; grid-row: 2; }
+#walkpad .right { grid-column: 3; grid-row: 2; }
+#loading { position: absolute; inset: 0; display: grid; place-items: center; background: #bcd2e4; color: #17211d; font: 500 15px/1.4 var(--font-body); text-align: center; padding-inline: 24px; }
+
+/* Instrument rail */
+#rail { background: var(--panel); border-left: 1px solid var(--line); overflow-y: auto; overscroll-behavior: contain;
+  padding-block: 14px 28px; padding-left: 16px; padding-right: max(16px, env(safe-area-inset-right, 0px)); display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+.sec { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.eyebrow { font: 600 11px/1.2 var(--font-display); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+h1 { font: 600 21px/1.15 var(--font-display); margin: 0; text-wrap: balance; letter-spacing: 0.01em; }
+h2 { font: 600 16px/1.2 var(--font-display); margin: 0; text-wrap: balance; }
+p { margin: 0; }
+.muted { color: var(--muted); }
+.small { font-size: 12.5px; }
+.row { display: flex; flex-wrap: wrap; gap: 6px; }
+button { font: 500 13px/1 var(--font-body); color: var(--ink); background: var(--panel-2); border: 1px solid var(--line); border-radius: 4px; padding: 8px 11px; cursor: pointer; }
+button:hover { border-color: var(--accent); }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
+.seg button { border: 0; border-radius: 0; }
+.seg button + button { border-left: 1px solid var(--line); }
+.readout { background: var(--panel-2); border: 1px solid var(--line); border-radius: 4px; padding: 10px 11px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.readout .big { font: 500 22px/1.1 var(--font-mono); font-variant-numeric: tabular-nums; }
+.kv { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 3px 12px; font-size: 12.5px; }
+.kv dt { color: var(--muted); min-width: 0; }
+.kv dd { margin: 0; font-family: var(--font-mono); font-variant-numeric: tabular-nums; text-align: right; }
+table { border-collapse: collapse; width: 100%; font-size: 12.5px; }
+.tbl { overflow-x: auto; }
+td, th { padding: 5px 4px; border-bottom: 1px solid var(--line); vertical-align: top; text-align: left; }
+th { font: 600 11px/1.2 var(--font-display); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+td.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+.tag { display: inline-block; font: 600 10.5px/1 var(--font-display); letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 5px; border-radius: 3px; border: 1px solid currentColor; white-space: nowrap; }
+.tag.m { color: var(--ok); }
+.tag.e { color: var(--est); border-style: dashed; }
+.tag.x { color: var(--muted); }
+.tag.w { color: var(--warn); }
+.tag.fail { color: var(--warn); }
+.tag.pass { color: var(--ok); }
+.alert { border-left: 3px solid var(--warn); padding: 6px 0 6px 10px; font-size: 12.5px; }
+.layers { display: grid; grid-template-columns: 1fr; gap: 6px; }
+.layers label { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; cursor: pointer; }
+.layers input { margin-top: 2px; accent-color: var(--accent); }
+.legend { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px 10px; align-items: center; font-size: 12.5px; }
+.sw { width: 18px; height: 10px; border-radius: 2px; }
+details summary { cursor: pointer; font: 600 13px/1.3 var(--font-display); letter-spacing: 0.02em; }
+details[open] summary { margin-bottom: 6px; }
+ul.notes { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; font-size: 12.5px; }
+#rail-toggle { display: none; }
+
+@media (max-width: 760px) {
+  #app { grid-template-columns: 1fr; grid-template-rows: minmax(0, 1fr) auto; }
+  #rail { border-left: 0; border-top: 1px solid var(--line); max-height: 46vh; padding-bottom: max(18px, env(safe-area-inset-bottom, 0px)); }
+  #rail.collapsed { max-height: 64px; overflow: hidden; }
+  #rail-toggle { display: inline-block; }
+  #hud-bl { bottom: 10px; }
+  #walkpad { bottom: 52px; }
+  .brand b { font-size: 14px; }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+
+<div id="app">
+  <div id="stage">
+    <canvas id="view" tabindex="0" aria-label="3D model of downtown Wilton. Drag to orbit, scroll to zoom."></canvas>
+    <div id="labels"></div>
+    <div class="hud" id="hud-tl">
+      <div class="brand"><b>Wilton downtown · Job #1976</b><span>RANH Level 2 pilot · 2019 USGS lidar model · UTM 19N / NAVD88 · feet</span></div>
+      <svg id="north" viewBox="0 0 46 46" aria-label="Grid north">
+        <circle cx="23" cy="23" r="21" fill="rgba(15,22,19,0.72)"/>
+        <g id="north-needle"><path d="M23 6 L29 24 L23 21 L17 24 Z" fill="#ffffff"/><path d="M23 40 L29 24 L23 27 L17 24 Z" fill="#7b8a83"/>
+        <text x="23" y="17" text-anchor="middle" font-size="8" font-family="IBM Plex Sans Condensed, Arial" font-weight="600" fill="#0f1513">N</text></g>
+      </svg>
+    </div>
+    <div class="hud" id="hud-bl">
+      <div class="chip-hud" id="cursor">Point at the ground for coordinates</div>
+      <div class="chip-hud" id="mode-hint">Drag to orbit · right-drag to pan · scroll to zoom</div>
+    </div>
+    <div id="walkpad" hidden>
+      <button class="up" data-k="fwd" aria-label="Walk forward">▲</button>
+      <button class="left" data-k="tl" aria-label="Turn left">◀</button>
+      <button class="down" data-k="back" aria-label="Walk back">▼</button>
+      <button class="right" data-k="tr" aria-label="Turn right">▶</button>
+    </div>
+    <div id="loading">Loading the Wilton model…</div>
+  </div>
+
+  <aside id="rail" aria-label="Model controls and site facts">
+    <div class="sec">
+      <div class="row" style="justify-content: space-between; align-items: center;">
+        <span class="eyebrow">Go to</span>
+        <button id="rail-toggle" aria-expanded="true">Hide panel</button>
+      </div>
+      <div class="row" id="goto"></div>
+    </div>
+
+    <div class="sec">
+      <span class="eyebrow">View</span>
+      <div class="row">
+        <div class="seg" role="group" aria-label="Navigation mode">
+          <button id="m-orbit" aria-pressed="true">Orbit</button>
+          <button id="m-walk" aria-pressed="false">Walk (5.5 ft eye)</button>
+        </div>
+        <button id="m-measure" aria-pressed="false">Measure</button>
+      </div>
+      <div class="readout" id="readout">
+        <p class="small muted">Click a stall, trench, roof plane or building to read its numbers. Turn on <b>Measure</b> and click two points for distance and slope in feet.</p>
+      </div>
+    </div>
+
+    <div class="sec" id="site-sec"></div>
+
+    <div class="sec">
+      <span class="eyebrow">Layers</span>
+      <div class="layers" id="layers"></div>
+    </div>
+
+    <div class="sec">
+      <span class="eyebrow">What the colours mean</span>
+      <div class="legend">
+        <span class="sw" style="background:#f2f1ea;border:1px solid #9aa"></span><span>EV stall, 18 × 9 ft (proposal)</span>
+        <span class="sw" style="background:#1c57e6"></span><span>ADA van stall · <span style="color:var(--ada)">■</span> 8 ft access aisle</span>
+        <span class="sw" style="background:#f2301a"></span><span>Trench route <span class="tag e">calc. estimate</span></span>
+        <span class="sw" style="background:#ffd21a"></span><span>Power source placeholder (not located)</span>
+        <span class="sw" style="background:rgba(255,226,26,0.55)"></span><span>40 deeded spaces, deed undelineated</span>
+        <span class="sw" style="background:rgba(255,40,30,0.5)"></span><span>Police exit keep-clear (assumed)</span>
+        <span class="sw" style="background:#3fbff2"></span><span>Mill roof plane (lidar)</span>
+        <span class="sw" style="background:#e04fc8"></span><span>Road centreline (OSM) · <span style="color:#22a552">■</span> footway / riverwalk</span>
+        <span class="sw" style="background:#2e8cff"></span><span>NHD stream / waterbody</span>
+        <span class="sw" style="background:#c47ad6"></span><span>Building, height not measured</span>
+      </div>
+    </div>
+
+    <div class="sec">
+      <span class="eyebrow">About the data</span>
+      <details open>
+        <summary>Measured, estimated, missing</summary>
+        <ul class="notes">
+          <li><span class="tag m">measured</span> Ground: USGS 3DEP 1 m DEM from 2019–20 lidar (NAVD88). Roof shapes and heights: 2019 lidar. Building outlines: Overture/OSM, shifted to fit the lidar (0.5 m E, −1.25 m N). Streams: USGS NHD.</li>
+          <li><span class="tag e">calc. estimate</span> Stall layouts are proposals. Trench lengths start at a placeholder because no transformer or service is mapped. The dike, bridge corridor and police-exit zone are traced, not surveyed.</li>
+          <li><span class="tag x">not loaded</span> FEMA flood zones and BFE, parcel lines, wetlands, orthophoto, utilities. The open sources were blocked from the build machine; load them in Blender with the tools in the .blend.</li>
+          <li>The ground colour is lidar intensity, <b>not a photo</b>. Google 3D Tiles are not in this viewer.</li>
+          <li>Coordinates: NAD83 / UTM 19N (EPSG:26919). Model X = E − 276,000 m, Y = N − 4,747,000 m; heights NAVD88. The north arrow shows grid north, 1.86° off true north here.</li>
+          <li>The browser terrain mesh is 2 m; the measure tool reads ground heights from the full 1 m DEM.</li>
+        </ul>
+      </details>
+    </div>
+  </aside>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
+<script id="model" type="application/json">/*__DATA__*/null</script>
+<script>
+(function () {
+  "use strict";
+  const loading = document.getElementById("loading");
+  if (!window.THREE || !THREE.OrbitControls) {
+    loading.textContent = "The 3D library (three.js from cdn.jsdelivr.net) did not load. Check the internet connection and reload the page.";
+    return;
+  }
+  const FT = 0.3048, E0 = 276000, N0 = 4747000, EYE = 1.68;
+  let D;
+
+  // ---------------------------------------------------------------- helpers
+  function dec(b64, T) {
+    const bin = atob(b64), u8 = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+    return new T(u8.buffer);
+  }
+  const V = (x, y, z) => new THREE.Vector3(x, z, -y);           // model (E, N, up) -> three (x, up, -N)
+  const L = (v) => ({ x: v.x, y: -v.z, z: v.y });                  // three -> model
+  const fmt = (v, d = 1) => Number(v).toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d });
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  function rng(seed) { return function () { seed |= 0; seed = (seed + 0x6d2b79f5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+
+  function Grid(g) {
+    Object.assign(this, { x0: g.x0, y0: g.y0, st: g.step, nx: g.nx, ny: g.ny });
+    const u = dec(g.z, Uint16Array);
+    this.z = new Float32Array(u.length);
+    for (let i = 0; i < u.length; i++) this.z[i] = u[i] === 65535 ? NaN : g.zmin + u[i] * g.q;
+  }
+  Grid.prototype.at = function (x, y) {
+    const c = (x - this.x0) / this.st, r = (this.y0 - y) / this.st;
+    if (!(c >= 0 && r >= 0 && c <= this.nx - 1 && r <= this.ny - 1)) return NaN;
+    const c0 = Math.min(Math.floor(c), this.nx - 2), r0 = Math.min(Math.floor(r), this.ny - 2);
+    const fc = c - c0, fr = r - r0, i = r0 * this.nx + c0, z = this.z;
+    return z[i] * (1 - fc) * (1 - fr) + z[i + 1] * fc * (1 - fr) + z[i + this.nx] * (1 - fc) * fr + z[i + this.nx + 1] * fc * fr;
+  };
+  let DET, OV;
+  function groundZ(x, y) { const z = DET.at(x, y); return Number.isNaN(z) ? OV.at(x, y) : z; }
+
+  // ---------------------------------------------------------------- scene
+  const canvas = document.getElementById("view");
+  const stage = document.getElementById("stage");
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  const scene = new THREE.Scene();
+  const SKY = 0xbcd2e4;
+  scene.background = new THREE.Color(SKY);
+  scene.fog = new THREE.Fog(SKY, 1800, 7500);
+  const camera = new THREE.PerspectiveCamera(55, 1, 0.3, 14000);
+  scene.add(new THREE.HemisphereLight(0xe4eef6, 0x5d5444, 0.78));
+  const sun = new THREE.DirectionalLight(0xffffff, 0.72);
+  sun.position.set(-0.45, 0.8, 0.35).multiplyScalar(1000);
+  scene.add(sun);
+  const controls = new THREE.OrbitControls(camera, canvas);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.12;
+  controls.maxPolarAngle = Math.PI * 0.495;
+  controls.minDistance = 3;
+  controls.maxDistance = 7000;
+  controls.screenSpacePanning = false;
+
+  const layers = {};
+  function layer(key) { if (!layers[key]) { layers[key] = new THREE.Group(); scene.add(layers[key]); } return layers[key]; }
+  const pickables = [];
+  const labels = [];
+  const labelBox = document.getElementById("labels");
+  function addLabel(text, x, y, z, kind, layerKey, maxDist) {
+    const el = document.createElement("div");
+    el.className = "lbl " + kind;
+    el.textContent = text;
+    labelBox.appendChild(el);
+    labels.push({ el, p: V(x, y, z), layer: layerKey, max: maxDist || 900, shown: true });
+  }
+
+  const mat = {
+    roofwall: new THREE.MeshLambertMaterial({ vertexColors: true, side: THREE.DoubleSide }),
+    ovb: new THREE.MeshLambertMaterial({ color: 0xc9c2b4, side: THREE.DoubleSide }),
+    stall: new THREE.MeshLambertMaterial({ color: 0xf2f1ea, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4 }),
+    ada: new THREE.MeshLambertMaterial({ color: 0x1c57e6, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4 }),
+    aisle: new THREE.MeshLambertMaterial({ color: 0x8cbfff, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4 }),
+    ped: new THREE.MeshLambertMaterial({ color: 0x1f2124 }),
+    pad: new THREE.MeshLambertMaterial({ color: 0xb3b0a8 }),
+    power: new THREE.MeshBasicMaterial({ color: 0xffd21a }),
+    trench: new THREE.MeshBasicMaterial({ color: 0xf2301a }),
+    bridge: new THREE.MeshBasicMaterial({ color: 0xffe14d }),
+    dike: new THREE.MeshBasicMaterial({ color: 0xf08a24 }),
+    dikeDim: new THREE.MeshBasicMaterial({ color: 0x9c6a3a }),
+    exitLine: new THREE.MeshBasicMaterial({ color: 0xb01010 }),
+    hazard: new THREE.MeshBasicMaterial({ color: 0xff2a14 }),
+    deed: new THREE.MeshBasicMaterial({ color: 0xffe21a, transparent: true, opacity: 0.3, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }),
+    exit: new THREE.MeshBasicMaterial({ color: 0xff281e, transparent: true, opacity: 0.3, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -3, polygonOffsetUnits: -3 }),
+    roof: new THREE.MeshLambertMaterial({ color: 0x3fbff2, transparent: true, opacity: 0.62, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }),
+    waterFill: new THREE.MeshLambertMaterial({ color: 0x2a5d78, transparent: true, opacity: 0.9, side: THREE.DoubleSide }),
+    crown: new THREE.MeshLambertMaterial({ color: 0x45722f }),
+    conifer: new THREE.MeshLambertMaterial({ color: 0x2a4f26 }),
+    trunk: new THREE.MeshLambertMaterial({ color: 0x4a3524 }),
+  };
+  const lineMat = (c) => new THREE.LineBasicMaterial({ color: c });
+  function unpackLines(pk) {   // {"p": base64 float32 xyz, "n": [points per line]} -> list of Float32Array
+    if (!pk.n.length) return [];
+    const all = dec(pk.p, Float32Array), out = [];
+    let o = 0;
+    for (const n of pk.n) { out.push(all.subarray(o * 3, (o + n) * 3)); o += n; }
+    return out;
+  }
+
+  function linesFromPolylines(list, color, layerKey) {
+    let n = 0;
+    for (const p of list) n += Math.max(0, p.length / 3 - 1);
+    const pos = new Float32Array(n * 6);
+    let k = 0;
+    for (const p of list) {
+      for (let i = 0; i + 5 < p.length; i += 3) {
+        pos[k++] = p[i]; pos[k++] = p[i + 2]; pos[k++] = -p[i + 1];
+        pos[k++] = p[i + 3]; pos[k++] = p[i + 5]; pos[k++] = -p[i + 4];
+      }
+    }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+    const obj = new THREE.LineSegments(g, lineMat(color));
+    layer(layerKey).add(obj);
+    return obj;
+  }
+  function tube(flat, radius, material, layerKey, info) {
+    const pts = [];
+    for (let i = 0; i + 2 < flat.length; i += 3) pts.push(V(flat[i], flat[i + 1], flat[i + 2]));
+    if (pts.length < 2) return null;
+    const curve = new THREE.CatmullRomCurve3(pts, false, "centripetal");
+    const m = new THREE.Mesh(new THREE.TubeGeometry(curve, Math.min(600, pts.length * 3), radius, 6, false), material);
+    if (info) { m.userData.info = info; pickables.push(m); }
+    layer(layerKey).add(m);
+    return m;
+  }
+  function meshFromB64(mesh, material, layerKey, info) {
+    const p = dec(mesh.p, Float32Array), idx = dec(mesh.i, Uint32Array);
+    const pos = new Float32Array(p.length);
+    for (let i = 0; i < p.length; i += 3) { pos[i] = p[i]; pos[i + 1] = p[i + 2]; pos[i + 2] = -p[i + 1]; }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+    g.setIndex(new THREE.BufferAttribute(idx, 1));
+    g.computeVertexNormals();
+    const m = new THREE.Mesh(g, material);
+    if (info) { m.userData.info = info; pickables.push(m); }
+    layer(layerKey).add(m);
+    return m;
+  }
+  function polyMesh(xyz, material, layerKey, info) {   // flat list of 3D vertices of one simple polygon
+    const contour = [], pts = [];
+    for (let i = 0; i + 2 < xyz.length; i += 3) { contour.push(new THREE.Vector2(xyz[i], xyz[i + 1])); pts.push(V(xyz[i], xyz[i + 1], xyz[i + 2])); }
+    const tris = THREE.ShapeUtils.triangulateShape(contour, []);
+    const g = new THREE.BufferGeometry().setFromPoints(pts);
+    g.setIndex(tris.flat());
+    g.computeVertexNormals();
+    const m = new THREE.Mesh(g, material);
+    if (info) { m.userData.info = info; pickables.push(m); }
+    layer(layerKey).add(m);
+    return m;
+  }
+
+  // ---------------------------------------------------------------- build
+  function buildTerrain() {
+    const s = 2, nx = Math.floor((DET.nx - 1) / s) + 1, ny = Math.floor((DET.ny - 1) / s) + 1;
+    const pos = new Float32Array(nx * ny * 3), uv = new Float32Array(nx * ny * 2), tb = D.texBox;
+    for (let i = 0; i < ny; i++) for (let j = 0; j < nx; j++) {
+      const x = DET.x0 + j * s * DET.st, y = DET.y0 - i * s * DET.st, z = DET.z[i * s * DET.nx + j * s];
+      const k = i * nx + j;
+      pos[k * 3] = x; pos[k * 3 + 1] = z; pos[k * 3 + 2] = -y;
+      uv[k * 2] = (x - tb[0]) / (tb[2] - tb[0]); uv[k * 2 + 1] = (y - tb[1]) / (tb[3] - tb[1]);
+    }
+    const idx = new Uint32Array((nx - 1) * (ny - 1) * 6);
+    let q = 0;
+    for (let i = 0; i < ny - 1; i++) for (let j = 0; j < nx - 1; j++) {
+      const a = i * nx + j, b = a + 1, c = a + nx, d = c + 1;
+      idx[q++] = a; idx[q++] = c; idx[q++] = b; idx[q++] = b; idx[q++] = c; idx[q++] = d;
+    }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+    g.setAttribute("uv", new THREE.BufferAttribute(uv, 2));
+    g.setIndex(new THREE.BufferAttribute(idx, 1));
+    g.computeVertexNormals();
+    const tex = new THREE.TextureLoader().load(D.tex, () => requestRender());
+    tex.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+    const texMat = new THREE.MeshLambertMaterial({ map: tex });
+    const plainMat = new THREE.MeshLambertMaterial({ color: 0xa9b39a });
+    const m = new THREE.Mesh(g, texMat);
+    m.userData.texMat = texMat; m.userData.plainMat = plainMat; m.userData.ground = true;
+    layer("terrain").add(m);
+    terrainMesh = m;
+
+    // overview terrain, 24 m, coloured by height
+    const o = OV, on = o.nx * o.ny;
+    const op = new Float32Array(on * 3), oc = new Float32Array(on * 3);
+    const lo = new THREE.Color(0x8d9a74), hi = new THREE.Color(0x6f7c5b), tmp = new THREE.Color();
+    for (let i = 0; i < o.ny; i++) for (let j = 0; j < o.nx; j++) {
+      const k = i * o.nx + j, z = o.z[k];
+      op[k * 3] = o.x0 + j * o.st; op[k * 3 + 1] = (Number.isNaN(z) ? 0 : z) - 0.4; op[k * 3 + 2] = -(o.y0 - i * o.st);
+      tmp.copy(lo).lerp(hi, Math.min(1, Math.max(0, ((z || 100) - 90) / 160)));
+      oc[k * 3] = tmp.r; oc[k * 3 + 1] = tmp.g; oc[k * 3 + 2] = tmp.b;
+    }
+    const oi = [];
+    for (let i = 0; i < o.ny - 1; i++) for (let j = 0; j < o.nx - 1; j++) {
+      const a = i * o.nx + j, b = a + 1, c = a + o.nx, d = c + 1;
+      if (Number.isNaN(o.z[a]) || Number.isNaN(o.z[b]) || Number.isNaN(o.z[c]) || Number.isNaN(o.z[d])) continue;
+      oi.push(a, c, b, b, c, d);
+    }
+    const og = new THREE.BufferGeometry();
+    og.setAttribute("position", new THREE.BufferAttribute(op, 3));
+    og.setAttribute("color", new THREE.BufferAttribute(oc, 3));
+    og.setIndex(new THREE.BufferAttribute(new Uint32Array(oi), 1));
+    og.computeVertexNormals();
+    layer("overview").add(new THREE.Mesh(og, new THREE.MeshLambertMaterial({ vertexColors: true })));
+  }
+
+  function buildBuildings() {
+    const B = D.bld, p = dec(B.p, Float32Array), idx = dec(B.i, Uint16Array), kind = dec(B.k, Uint8Array), owner = dec(B.o, Uint16Array);
+    const nt = idx.length / 3, pos = new Float32Array(nt * 9), col = new Float32Array(nt * 9);
+    const roofC = new THREE.Color(0x5f5b57), wallC = new THREE.Color(0xd9d2c4);
+    for (let t = 0; t < nt; t++) {
+      const c = kind[t] ? wallC : roofC;
+      for (let v = 0; v < 3; v++) {
+        const s = (idx[t * 3 + v] + B.vo[owner[t]]) * 3, d = (t * 3 + v) * 3;
+        pos[d] = p[s]; pos[d + 1] = p[s + 2]; pos[d + 2] = -p[s + 1];
+        col[d] = c.r; col[d + 1] = c.g; col[d + 2] = c.b;
+      }
+    }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+    g.setAttribute("color", new THREE.BufferAttribute(col, 3));
+    g.computeVertexNormals();
+    const m = new THREE.Mesh(g, mat.roofwall);
+    m.userData.infoAt = (faceIndex) => {
+      const b = B.info[owner[faceIndex]];
+      return { title: b.n || "Building", rows: [["Height, eave ground to roof top", fmt(b.h) + " ft"], ["Footprint", fmt(b.a, 0) + " sq ft"]],
+        note: "Outline: Overture/OSM, lidar-registered. Roof: 2019 USGS lidar.", tag: "m" };
+    };
+    pickables.push(m);
+    layer("buildings").add(m);
+    linesFromPolylines(B.outlines, 0xc47ad6, "buildings");
+
+    // overview buildings
+    const xy = dec(D.ovb.xy, Float32Array), P = [], I = [];
+    let off = 0;
+    D.ovb.n.forEach((n, bi) => {
+      const contour = [], base = D.ovb.base[bi], top = D.ovb.top[bi], v0 = P.length / 3;
+      for (let k = 0; k < n; k++) contour.push(new THREE.Vector2(xy[(off + k) * 2], xy[(off + k) * 2 + 1]));
+      off += n;
+      for (const c of contour) P.push(c.x, base, -c.y);
+      for (const c of contour) P.push(c.x, top, -c.y);
+      for (let a = 0; a < n; a++) { const b = (a + 1) % n; I.push(v0 + a, v0 + b, v0 + n + b, v0 + a, v0 + n + b, v0 + n + a); }
+      for (const t of THREE.ShapeUtils.triangulateShape(contour, [])) I.push(v0 + n + t[0], v0 + n + t[1], v0 + n + t[2]);
+    });
+    const og = new THREE.BufferGeometry();
+    og.setAttribute("position", new THREE.BufferAttribute(new Float32Array(P), 3));
+    og.setIndex(I);
+    const ogn = og.toNonIndexed();
+    ogn.computeVertexNormals();
+    layer("overview").add(new THREE.Mesh(ogn, mat.ovb));
+    linesFromPolylines(D.ovb.noheight, 0xc47ad6, "overview");
+  }
+
+  function buildTrees() {
+    const T = dec(D.trees, Float32Array), n = T.length / 5, r = rng(1976);
+    const conifer = [];
+    for (let i = 0; i < n; i++) conifer.push(r() < 0.3);
+    const nc = conifer.filter(Boolean).length;
+    const crown = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1, 1), mat.crown, n - nc);
+    const cone = new THREE.InstancedMesh(new THREE.ConeGeometry(1, 1, 7), mat.conifer, nc);
+    const trunk = new THREE.InstancedMesh(new THREE.CylinderGeometry(1, 1, 1, 5), mat.trunk, n);
+    const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), s = new THREE.Vector3();
+    let a = 0, b = 0;
+    for (let i = 0; i < n; i++) {
+      const x = T[i * 5], y = T[i * 5 + 1], gz = T[i * 5 + 2], h = T[i * 5 + 3], cr = T[i * 5 + 4];
+      const tr = Math.min(0.45, Math.max(0.12, 0.012 * h));
+      m4.compose(V(x, y, gz - 0.3 + 0.3 * h), q, s.set(tr, 0.6 * h, tr));
+      trunk.setMatrixAt(i, m4);
+      if (conifer[i]) { m4.compose(V(x, y, gz + h - 0.39 * h), q, s.set(cr * 0.8, 0.78 * h, cr * 0.8)); cone.setMatrixAt(b++, m4); }
+      else { m4.compose(V(x, y, gz + h - cr * 0.9), q, s.set(cr, cr * 0.9, cr)); crown.setMatrixAt(a++, m4); }
+    }
+    layer("trees").add(crown, cone, trunk);
+  }
+
+  function buildLinework() {
+    linesFromPolylines(unpackLines(D.roads.road), 0xe04fc8, "roads");
+    linesFromPolylines(unpackLines(D.roads.foot), 0x22c55e, "roads");
+    linesFromPolylines(unpackLines(D.roads.rail), 0x4b4b4b, "roads");
+    linesFromPolylines(unpackLines(D.water.lines), 0x2e8cff, "water");
+    for (const f of D.water.fills) {
+      const contour = [];
+      for (let i = 0; i + 1 < f.xy.length; i += 2) contour.push(new THREE.Vector2(f.xy[i], f.xy[i + 1]));
+      if (contour.length < 3) continue;
+      const tris = THREE.ShapeUtils.triangulateShape(contour, []);
+      const g = new THREE.BufferGeometry().setFromPoints(contour.map((c) => V(c.x, c.y, f.z)));
+      g.setIndex(tris.flat());
+      g.computeVertexNormals();
+      layer("water").add(new THREE.Mesh(g, mat.waterFill));
+    }
+    for (const l of D.labels) {
+      const lk = l.k === "water" ? "water" : "labels";
+      addLabel(l.t, l.p[0], l.p[1], l.p[2], l.k, lk, l.k === "water" ? 1600 : l.k === "street" ? 950 : 650);
+    }
+  }
+
+  function boxAt(group, w, h, d, y, material) {
+    const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), material);
+    m.position.y = y + h / 2;
+    group.add(m);
+    return m;
+  }
+
+  function buildSites() {
+    for (const s of D.sites) {
+      const short = s.key.slice(0, 2);
+      for (const it of s.items) {
+        const info = { title: `${short} ${it.n}`, rows: [["Slope (DEM plane fit)", it.s == null ? "n/a" : fmt(it.s, 2) + " %"], ["ADA limit", "2.08 %"]],
+          note: "Design proposal; slope from the USGS 1 m DEM.", tag: it.k === "stall" ? "e" : (it.s != null && it.s > 2.08 ? "fail" : "e") };
+        if (it.k !== "stall") info.rows.push(["Check", it.s != null && it.s <= 2.08 ? "meets 2.08 %" : "EXCEEDS 2.08 %"]);
+        polyMesh(it.p, mat[it.k], "layouts", info);
+        const ring = it.p.concat(it.p.slice(0, 3)).map((v, i) => (i % 3 === 2 ? v + 0.02 : v));
+        linesFromPolylines([ring], it.k === "stall" ? 0x2c2c2c : 0xffffff, "layouts");
+      }
+      const th = s.heading * Math.PI / 180;
+      s.peds.forEach((p, i) => {
+        const g = new THREE.Group();
+        g.position.copy(V(p.xy[0], p.xy[1], p.z));
+        g.rotation.y = th;
+        const ped = boxAt(g, 0.40, 1.80, 0.30, 0.15, mat.ped);
+        boxAt(g, 0.76, 0.20, 0.61, -0.05, mat.pad);
+        const w = 0.40 + 2 * 0.9144, d = 0.30 + 2 * 0.9144;
+        const rect = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(w, 0.02, d)), lineMat(0xffc400));
+        rect.position.y = 0.06;
+        g.add(rect);
+        ped.userData.info = { title: `${short} Pedestal ${i + 1} (dual port, generic)`, rows: [["Envelope", "0.40 × 0.30 × 1.80 m"], ["Pad", "30 × 24 in"], ["Plow buffer", "3 ft all round"]],
+          note: "Generic placeholder; set the real model and footprint.", tag: "e" };
+        pickables.push(ped);
+        layer("layouts").add(g);
+      });
+      const pw = s.power;
+      const pg = new THREE.Group();
+      pg.position.copy(V(pw.xy[0], pw.xy[1], pw.z));
+      const pb = boxAt(pg, 0.9, 1.2, 0.9, 0, mat.power);
+      pb.userData.info = { title: `${short} Power source placeholder`, rows: [], note: pw.note, tag: "x" };
+      pickables.push(pb);
+      layer("layouts").add(pg);
+      addLabel("POWER SOURCE? placeholder", pw.xy[0], pw.xy[1], pw.z + 2.4, "est", "layouts", 200);
+      for (const t of s.trenches) {
+        tube(t.p, 0.12, mat.trench, "layouts", { title: `${short} Trench to ${t.to}`, rows: [["Along ground", fmt(t.l3) + " ft"], ["Plan length", fmt(t.l2) + " ft"]],
+          note: "Starts at the placeholder power point; re-route once the transformer or panel is tagged.", tag: "e" });
+        const mid = Math.floor(t.p.length / 6) * 3;
+        addLabel(`${fmt(t.l3)} ft`, t.p[mid], t.p[mid + 1], t.p[mid + 2] + 0.9, "trench", "layouts", 220);
+      }
+      addLabel(s.title, s.center[0], s.center[1], s.center[2] + 12, "site", "labels", 4000);
+      for (const ov of s.ov) {
+        if (ov.k === "deed") {
+          meshFromB64(ov.mesh, mat.deed, "overlays", { title: "S1 40 deeded spaces · deed undelineated", rows: [["Shaded area (whole paved lot)", fmt(ov.area, 0) + " sq ft"]], note: ov.src, tag: "x" });
+          addLabel("40 SPACES DEEDED TO WILTON FALLS BLDG · DEED UNDELINEATED (whole lot shaded)", ov.at[0], ov.at[1], ov.at[2] + 1.2, "note", "overlays", 300);
+        } else if (ov.k === "exit") {
+          meshFromB64(ov.mesh, mat.exit, "overlays", { title: "S1 Police exit keep-clear", rows: [], note: ov.note, tag: "e" });
+          tube(ov.line, 0.08, mat.exitLine, "overlays");
+          addLabel(ov.label, ov.at[0], ov.at[1], ov.at[2] + 1.5, "est", "overlays", 300);
+        } else if (ov.k === "hazard") {
+          const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.18, 7, 8), mat.hazard);
+          pole.position.copy(V(ov.at[0], ov.at[1], ov.at[2] + 3.5));
+          pole.userData.info = { title: "Reported cyanide vault (location not mapped)", rows: [], note: ov.label, tag: "w" };
+          pickables.push(pole);
+          layer("overlays").add(pole);
+          addLabel("⚠ Reported cyanide vault next to the Police Dept (EPA 2023) · location NOT mapped · click the red post", ov.at[0], ov.at[1], ov.at[2] + 14, "warn", "overlays", 600);
+        } else if (ov.k === "ring") {
+          linesFromPolylines([ov.line], 0xffffff, "overlays");
+          addLabel(ov.label, ov.at[0], ov.at[1], ov.at[2] + 1.5, "note", "overlays", 500);
+        } else if (ov.k === "note") {
+          addLabel(ov.label, ov.at[0], ov.at[1], ov.at[2] + 5, "note", "overlays", 330);
+        } else if (ov.k === "bridge") {
+          tube(ov.line, 0.25, mat.bridge, "overlays", { title: "S4 Pedestrian bridge corridor", rows: [], note: ov.note, tag: "e" });
+          addLabel(ov.label, ov.at[0], ov.at[1], ov.at[2] + 6, "est", "overlays", 700);
+        } else if (ov.k === "dike") {
+          const runs = [];
+          let cur = null;
+          for (let i = 0; i < ov.mask.length; i++) {
+            const m = ov.mask[i];
+            if (!cur || cur.m !== m) { if (cur) cur.p.push(...ov.line.slice(i * 3, i * 3 + 3)); cur = { m, p: [] }; runs.push(cur); }
+            cur.p.push(...ov.line.slice(i * 3, i * 3 + 3));
+          }
+          for (const r of runs) tube(r.p, r.m ? 0.32 : 0.14, r.m ? mat.dike : mat.dikeDim, "overlays", { title: "S4 Dike crest trace", rows: [], note: ov.label, tag: "e" });
+          addLabel("DIKE (calc. estimate) · confirm on site", ov.at[0], ov.at[1], ov.at[2] + 4, "est", "overlays", 450);
+        }
+      }
+    }
+  }
+
+  function buildRoof() {
+    const planes = {};
+    for (const b of D.roof.buildings) for (const p of b.planes) planes[b.building + "|" + p.id] = p;
+    const best = {};
+    for (const pt of D.roof.patches) {
+      const [a, b, c] = pt.abc, xyz = [];
+      for (let i = 0; i + 1 < pt.r.length; i += 2) xyz.push(pt.r[i], pt.r[i + 1], a * pt.r[i] + b * pt.r[i + 1] + c + 0.15);
+      const p = planes[pt.b + "|" + pt.pl] || {};
+      polyMesh(xyz, mat.roof, "roof", {
+        title: `${pt.b.split(" (")[0]} · roof plane ${pt.pl}`,
+        rows: [["Plan area", fmt(p.plan_area_sqft, 0) + " sq ft"], ["Sloped area", fmt(p.sloped_area_sqft, 0) + " sq ft"], ["Slope / pitch", `${p.slope_deg}° / ${p.pitch_in_12}:12`],
+          ["Azimuth (true)", p.slope_deg < 1 ? "flat" : p.azimuth_true_deg + "°"], ["Height above ground", fmt(p.height_above_ground_ft) + " ft"],
+          ["Usable, 3 ft / 4 ft setback", `${fmt(p.usable_3ft_sqft, 0)} / ${fmt(p.usable_4ft_sqft, 0)} sq ft`], ["Solar (4 ft setback)", fmt(p.solar_kwdc_est) + " kW-DC"]],
+        note: "Plane fit to 2019 lidar. Usable area and kW-DC are calculated estimates; roof structure not assessed.", tag: "m" });
+      const area = p.plan_area_sqft || 0;
+      if (!best[pt.b] || area > best[pt.b].area) {
+        let sx = 0, sy = 0;
+        for (let i = 0; i < xyz.length; i += 3) { sx += xyz[i]; sy += xyz[i + 1]; }
+        const n = xyz.length / 3;
+        best[pt.b] = { area, x: sx / n, y: sy / n, z: a * sx / n + b * sy / n + c };
+      }
+    }
+    for (const b of D.roof.buildings) {
+      const at = best[b.building];
+      if (!at) continue;
+      const usable = b.planes.reduce((s, p) => s + p.usable_4ft_sqft, 0);
+      addLabel(`${b.building.split(" (")[0]}: footprint ${fmt(b.footprint_sqft, 0)} sq ft · usable roof (4 ft setback) ${fmt(usable, 0)} sq ft (est.)`, at.x, at.y, at.z + 5, "roof", "roof", 450);
+    }
+  }
+
+  // ---------------------------------------------------------------- picking
+  const ray = new THREE.Raycaster();
+  const ndc = new THREE.Vector2();
+  let terrainMesh = null;
+  function marchGround(r) {
+    const o = L(r.origin), d = L(r.direction);
+    let tPrev = 0, hPrev = o.z - groundZ(o.x, o.y), t = 0.5;
+    if (Number.isNaN(hPrev)) hPrev = 1;
+    while (t < 9000) {
+      const x = o.x + d.x * t, y = o.y + d.y * t, z = o.z + d.z * t;
+      const g = groundZ(x, y);
+      if (!Number.isNaN(g)) {
+        const h = z - g;
+        if (h <= 0 && hPrev > 0) {
+          let lo = tPrev, hi = t;
+          for (let k = 0; k < 24; k++) { const m = (lo + hi) / 2; const gm = groundZ(o.x + d.x * m, o.y + d.y * m); if (o.z + d.z * m - gm > 0) lo = m; else hi = m; }
+          const x2 = o.x + d.x * hi, y2 = o.y + d.y * hi;
+          return { t: hi, p: { x: x2, y: y2, z: groundZ(x2, y2) }, ground: true };
+        }
+        hPrev = h;
+      }
+      tPrev = t;
+      t += Math.max(0.4, t * 0.004);
+    }
+    return null;
+  }
+  function pick(cx, cy, withObjects) {
+    const rect = canvas.getBoundingClientRect();
+    ndc.set(((cx - rect.left) / rect.width) * 2 - 1, -((cy - rect.top) / rect.height) * 2 + 1);
+    ray.setFromCamera(ndc, camera);
+    const g = marchGround(ray.ray);
+    if (!withObjects) return g;
+    const vis = pickables.filter((m) => { let o = m; while (o) { if (!o.visible) return false; o = o.parent; } return true; });
+    const hits = ray.intersectObjects(vis, false);
+    if (hits.length && (!g || hits[0].distance < g.t - 0.05)) {
+      const h = hits[0], p = L(h.point);
+      return { t: h.distance, p, ground: false, obj: h.object, face: h.faceIndex };
+    }
+    return g;
+  }
+
+  // ---------------------------------------------------------------- UI
+  const readout = document.getElementById("readout");
+  const cursorEl = document.getElementById("cursor");
+  const coordText = (p) => `E ${fmt(p.x + E0, 1)} · N ${fmt(p.y + N0, 1)} m · ${fmt(p.z / FT, 1)} ft NAVD88`;
+  const TAGS = { m: ["m", "measured"], e: ["e", "calc. estimate"], x: ["x", "not located"], w: ["w", "warning"], fail: ["fail", "exceeds ADA"] };
+  function showInfo(info, p) {
+    const tg = TAGS[info.tag] || TAGS.e;
+    readout.innerHTML = `<div class="row" style="align-items:center;justify-content:space-between"><h2>${esc(info.title)}</h2><span class="tag ${tg[0]}">${tg[1]}</span></div>` +
+      (info.rows.length ? `<dl class="kv">${info.rows.map((r) => `<dt>${esc(r[0])}</dt><dd>${esc(r[1])}</dd>`).join("")}</dl>` : "") +
+      (info.note ? `<p class="small muted">${esc(info.note)}</p>` : "") +
+      (p ? `<p class="small" style="font-family:var(--font-mono)">${esc(coordText(p))}</p>` : "");
+  }
+
+  // measure
+  let measuring = false, mPts = [];
+  const mGroup = new THREE.Group();
+  scene.add(mGroup);
+  const markerMat = new THREE.MeshBasicMaterial({ color: 0xff3df2, depthTest: false });
+  const mLineMat = new THREE.LineBasicMaterial({ color: 0xff3df2, depthTest: false });
+  function clearMeasure() { mPts = []; while (mGroup.children.length) mGroup.remove(mGroup.children[0]); }
+  function addMeasurePoint(hit) {
+    if (mPts.length === 2) clearMeasure();
+    mPts.push(hit);
+    const s = new THREE.Mesh(new THREE.SphereGeometry(0.22, 12, 8), markerMat);
+    s.position.copy(V(hit.p.x, hit.p.y, hit.p.z));
+    s.renderOrder = 10;
+    mGroup.add(s);
+    if (mPts.length === 1) {
+      readout.innerHTML = `<span class="eyebrow">Measure · point A</span><p style="font-family:var(--font-mono)" class="small">${esc(coordText(hit.p))}</p><p class="small muted">Height from ${hit.ground ? "the 1 m DEM (ground)" : "the model surface you clicked"}. Click point B.</p>`;
+      return;
+    }
+    const [a, b] = mPts;
+    const g = new THREE.BufferGeometry().setFromPoints([V(a.p.x, a.p.y, a.p.z), V(b.p.x, b.p.y, b.p.z)]);
+    const ln = new THREE.Line(g, mLineMat);
+    ln.renderOrder = 10;
+    mGroup.add(ln);
+    const dx = b.p.x - a.p.x, dy = b.p.y - a.p.y, dz = b.p.z - a.p.z, hd = Math.hypot(dx, dy), d3 = Math.hypot(hd, dz);
+    const brg = (Math.atan2(dx, dy) * 180 / Math.PI + 360) % 360;
+    readout.innerHTML = `<span class="eyebrow">Measure · A to B</span><div class="big">${fmt(hd / FT)} ft</div>
+      <dl class="kv"><dt>Horizontal distance</dt><dd>${fmt(hd / FT)} ft</dd><dt>Along the line (3D)</dt><dd>${fmt(d3 / FT)} ft</dd>
+      <dt>Height change B − A</dt><dd>${dz >= 0 ? "+" : ""}${fmt(dz / FT, 2)} ft</dd><dt>Slope</dt><dd>${hd > 0.01 ? fmt((dz / hd) * 100, 2) + " %" : "n/a"}</dd>
+      <dt>Grid bearing</dt><dd>${fmt(brg, 1)}°</dd></dl>
+      <p class="small" style="font-family:var(--font-mono)">A ${esc(coordText(a.p))}<br>B ${esc(coordText(b.p))}</p>
+      <p class="small muted">Heights: ${a.ground && b.ground ? "1 m USGS DEM at both points" : "model surface where you clicked an object"}. Lidar-based, about ±0.2 ft vertical and 1.5–3 ft horizontal on edges; not a survey.</p>`;
+  }
+
+  // modes
+  let mode = "orbit";
+  const walk = { x: 0, y: 0, yaw: 0, pitch: -0.05, keys: {} };
+  const btnOrbit = document.getElementById("m-orbit"), btnWalk = document.getElementById("m-walk"), btnMeasure = document.getElementById("m-measure");
+  const hint = document.getElementById("mode-hint"), pad = document.getElementById("walkpad");
+  const coarse = window.matchMedia("(pointer: coarse)").matches;
+  const ORBIT_HINT = coarse ? "Drag to orbit · two fingers to pan and zoom · tap to identify" : "Drag to orbit · right-drag to pan · scroll to zoom";
+  hint.textContent = ORBIT_HINT;
+  if (coarse) cursorEl.hidden = true;
+  function setMode(m) {
+    mode = m;
+    btnOrbit.setAttribute("aria-pressed", m === "orbit");
+    btnWalk.setAttribute("aria-pressed", m === "walk");
+    controls.enabled = m === "orbit";
+    pad.hidden = !(m === "walk" && coarse);
+    if (m === "walk") {
+      const t = L(controls.target);
+      const dir = new THREE.Vector3(); camera.getWorldDirection(dir);
+      walk.x = t.x; walk.y = t.y; walk.yaw = Math.atan2(dir.x, -dir.z); walk.pitch = -0.05;
+      hint.textContent = coarse ? "Drag to look · arrows to walk" : "W A S D or arrows to walk · drag to look · Shift to walk faster";
+    } else {
+      const dir = new THREE.Vector3();
+      camera.getWorldDirection(dir);
+      controls.target.copy(camera.position).add(dir.multiplyScalar(25));
+      hint.textContent = ORBIT_HINT;
+    }
+    requestRender();
+  }
+  btnOrbit.onclick = () => setMode("orbit");
+  btnWalk.onclick = () => setMode("walk");
+  btnMeasure.onclick = () => { measuring = !measuring; btnMeasure.setAttribute("aria-pressed", measuring); if (!measuring) clearMeasure(); requestRender(); };
+
+  function flyTo(site) {
+    if (mode === "walk") {
+      walk.x = site.eye[0]; walk.y = site.eye[1];
+      walk.yaw = Math.atan2(site.center[0] - site.eye[0], site.center[1] - site.eye[1]);
+      walk.pitch = -0.08;
+    } else {
+      camera.position.copy(V(site.aerial[0], site.aerial[1], site.aerial[2]));
+      controls.target.copy(V(site.center[0], site.center[1], site.center[2]));
+      controls.update();
+    }
+    requestRender();
+  }
+  function home() {
+    const b = D.texBox, cx = (b[0] + b[2]) / 2, cy = (b[1] + b[3]) / 2, cz = groundZ(cx, cy);
+    if (mode === "walk") setMode("orbit");
+    controls.target.copy(V(cx, cy, cz));
+    camera.position.copy(V(cx - 420, cy - 620, cz + 520));
+    controls.update();
+    requestRender();
+  }
+
+  // site facts
+  const siteSec = document.getElementById("site-sec");
+  function siteFacts(s) {
+    const m = s.measured, ada = s.search.ada_slope_pct, ok = ada <= 2.08;
+    let h = `<span class="eyebrow">Site facts</span><h1>${esc(s.title)}</h1><p class="small muted">${esc(s.addr)}</p><p class="small">${esc(s.rationale)}</p>`;
+    if (s.key === "S1_PoliceLot") h += `<div class="alert"><b>Reported sodium-cyanide vault</b> under a concrete cap next to the Police Department (EPA 2023, Abbott Trust Lot J-104-2). Not mapped; locate before trenching.</div>`;
+    if (s.key === "S2_MainStLot") h += `<div class="alert"><b>Location to confirm.</b> The brief says SE corner of Main St / Burns Hill Rd; the paving in the data is SW of it. Flood rings are distances only (FEMA layer not loaded).</div>`;
+    if (s.key === "S3_Library") h += `<div class="alert"><b>Street name to confirm.</b> OSM calls this Forest Rd; the brief says Main St. The library sits about 13 ft above the curb.</div>`;
+    h += `<div class="tbl"><table><thead><tr><th>Measure</th><th style="text-align:right">Value</th><th>Basis</th></tr></thead><tbody>
+      <tr><td>Ground at stalls</td><td class="num">${fmt(m.kit_ground_z_navd88_ft, 2)} ft</td><td><span class="tag m">DEM</span></td></tr>
+      <tr><td>ADA stall + aisle slope (limit 2.08 %)</td><td class="num">${fmt(ada, 2)} %</td><td><span class="tag ${ok ? "pass" : "fail"}">${ok ? "meets" : "exceeds"}</span></td></tr>
+      <tr><td>Steepest stall or aisle</td><td class="num">${fmt(s.search.max_slope_pct, 2)} %</td><td><span class="tag m">DEM</span></td></tr>
+      <tr><td>Nearest building</td><td class="num">${fmt(m.nearest_building_clearance_ft)} ft</td><td><span class="tag m">lidar/OSM</span></td></tr>
+      <tr><td>Mapped water edge (${esc(m.nearest_named_stream)})</td><td class="num">${fmt(m.distance_to_mapped_water_edge_ft)} ft</td><td><span class="tag m">NHD</span></td></tr>
+      <tr><td>Height above stream surface (not a BFE)</td><td class="num">${fmt(m.height_above_stream_water_surface_ft)} ft</td><td><span class="tag m">DEM</span></td></tr>
+      <tr><td>Riverwalk / footway</td><td class="num">${fmt(m.distance_to_osm_footway_riverwalk_ft)} ft</td><td><span class="tag m">OSM</span></td></tr>
+      ${s.trenches.map((t) => `<tr><td>Trench to ${esc(t.to)}</td><td class="num">${fmt(t.l3)} ft</td><td><span class="tag e">estimate</span></td></tr>`).join("")}
+      ${s.items.map((it) => `<tr><td>${esc(it.n)}</td><td class="num">${it.s == null ? "n/a" : fmt(it.s, 2) + " %"}</td><td><span class="tag e">proposal</span></td></tr>`).join("")}
+      </tbody></table></div>`;
+    if (s.key === "S4_Mill") {
+      const t = D.roof.totals;
+      h += `<h2>Mill roof (2019 lidar)</h2><dl class="kv"><dt>Footprint, both buildings</dt><dd>${fmt(t.footprint_sqft, 0)} sq ft</dd><dt>Roof planes</dt><dd>${fmt(t.roof_planes_sloped_sqft, 0)} sq ft</dd>
+        <dt>Usable, 3 ft / 4 ft setback</dt><dd>${fmt(t.usable_3ft_sqft, 0)} / ${fmt(t.usable_4ft_sqft, 0)} sq ft</dd><dt>Solar, 4 ft setback (est.)</dt><dd>${fmt(t.solar_kwdc_est)} kW-DC</dd></dl>
+        <div class="tbl"><table><thead><tr><th>Claim</th><th style="text-align:right">÷ footprint</th></tr></thead><tbody>
+        ${D.roof.claims.map((c) => `<tr><td>${esc(c.claim)}<br><span class="muted small">${esc(c.source)}</span></td><td class="num">${fmt(c.claim_over_footprint, 2)}</td></tr>`).join("")}
+        </tbody></table></div><p class="small muted">The claims are about twice the measured footprint, which fits floor area over two levels, not roof area.</p>`;
+    }
+    siteSec.innerHTML = h;
+  }
+  function downtownFacts() {
+    siteSec.innerHTML = `<span class="eyebrow">Overview</span><h1>Downtown Wilton, four candidate sites</h1>
+      <p class="small">True-scale model from the 2019 USGS lidar: about 3,000 × 3,500 ft of detail around the sites, with terrain and buildings out to 2 miles. Pick a site above for its layout and measurements.</p>
+      <div class="tbl"><table><thead><tr><th>Site</th><th style="text-align:right">ADA slope</th><th style="text-align:right">Trenches (est.)</th></tr></thead><tbody>
+      ${D.sites.map((s) => `<tr><td>${esc(s.title)}</td><td class="num">${fmt(s.search.ada_slope_pct, 2)} % <span class="tag ${s.search.ada_slope_pct <= 2.08 ? "pass" : "fail"}">${s.search.ada_slope_pct <= 2.08 ? "ok" : "over"}</span></td><td class="num">${s.trenches.map((t) => fmt(t.l3)).join(" + ")} ft</td></tr>`).join("")}
+      </tbody></table></div>
+      <p class="small muted">Every layout is two dual-port pedestals with 18 ft stalls, an ADA van stall and an 8 ft aisle, and a 3 ft plow buffer. RANH caps a town at $100k, which is 10 ports at the $10k per-port maximum.</p>`;
+  }
+
+  // go-to buttons
+  const gotoEl = document.getElementById("goto");
+  const gotoBtns = [];
+  function addGoto(label, fn, id) {
+    const b = document.createElement("button");
+    b.textContent = label;
+    b.id = "go-" + id;
+    b.setAttribute("aria-pressed", "false");
+    b.onclick = () => { gotoBtns.forEach((x) => x.setAttribute("aria-pressed", x === b)); fn(); try { history.replaceState(null, "", "#" + id); } catch (e) { /* ignore */ } };
+    gotoEl.appendChild(b);
+    gotoBtns.push(b);
+    return b;
+  }
+
+  // layers
+  const LAYERS = [
+    ["terrain", "Terrain, 1 m lidar DEM", true], ["groundtex", "Ground colour from lidar intensity (not a photo)", true], ["buildings", "Buildings with lidar roofs", true],
+    ["trees", "Trees from the lidar canopy", true], ["roads", "Roads and footways (OSM)", true], ["water", "Streams and ponds (NHD)", true],
+    ["layouts", "Charger layouts and trenches", true], ["overlays", "Overlays: deed area, police exit, rings, bridge, dike, hazard", true],
+    ["roof", "Mill roof planes", true], ["overview", "2-mile overview terrain and buildings", true], ["labels", "Street and site labels", true],
+  ];
+  const layerBox = document.getElementById("layers");
+  const layerOn = {};
+  for (const [k, name, on] of LAYERS) {
+    const id = "ly-" + k, lab = document.createElement("label");
+    lab.innerHTML = `<input type="checkbox" id="${id}" ${on ? "checked" : ""}><span>${esc(name)}</span>`;
+    layerBox.appendChild(lab);
+    layerOn[k] = on;
+    lab.querySelector("input").addEventListener("change", (e) => { layerOn[k] = e.target.checked; applyLayers(); });
+  }
+  function applyLayers() {
+    for (const k in layers) layers[k].visible = layerOn[k] !== false;
+    if (terrainMesh) terrainMesh.material = layerOn.groundtex ? terrainMesh.userData.texMat : terrainMesh.userData.plainMat;
+    requestRender();
+  }
+
+  // phone: collapse the rail
+  const rail = document.getElementById("rail"), railToggle = document.getElementById("rail-toggle");
+  railToggle.onclick = () => { const c = rail.classList.toggle("collapsed"); railToggle.textContent = c ? "Show panel" : "Hide panel"; railToggle.setAttribute("aria-expanded", !c); setTimeout(resize, 50); };
+
+  // ---------------------------------------------------------------- input
+  let down = null;
+  canvas.addEventListener("pointerdown", (e) => { down = { x: e.clientX, y: e.clientY, lx: e.clientX, ly: e.clientY, id: e.pointerId, btn: e.button }; if (mode === "walk") canvas.setPointerCapture(e.pointerId); });
+  canvas.addEventListener("pointermove", (e) => {
+    if (down && mode === "walk" && e.pointerId === down.id) {
+      walk.yaw += (e.clientX - down.lx) * 0.0045;
+      walk.pitch = Math.max(-1.35, Math.min(1.35, walk.pitch - (e.clientY - down.ly) * 0.0045));
+      down.lx = e.clientX; down.ly = e.clientY;
+      requestRender();
+    }
+    hoverAt = { x: e.clientX, y: e.clientY };
+  });
+  canvas.addEventListener("pointerup", (e) => {
+    if (!down) return;
+    const moved = Math.hypot(e.clientX - down.x, e.clientY - down.y);
+    const wasLeft = down.btn === 0;
+    down = null;
+    if (moved > 5 || !wasLeft) return;
+    const hit = pick(e.clientX, e.clientY, true);
+    if (!hit) return;
+    if (measuring) { addMeasurePoint(hit); requestRender(); return; }
+    if (hit.obj) {
+      const info = hit.obj.userData.infoAt ? hit.obj.userData.infoAt(hit.face) : hit.obj.userData.info;
+      if (info) { showInfo(info, hit.p); return; }
+    }
+    readout.innerHTML = `<span class="eyebrow">Ground</span><p style="font-family:var(--font-mono)" class="small">${esc(coordText(hit.p))}</p><p class="small muted">Height from the USGS 1 m DEM (2019 lidar).</p>`;
+  });
+  canvas.addEventListener("pointercancel", () => { down = null; });
+  let hoverAt = null;
+  const keyMap = { KeyW: "fwd", ArrowUp: "fwd", KeyS: "back", ArrowDown: "back", KeyA: "sl", KeyD: "sr", ArrowLeft: "tl", ArrowRight: "tr" };
+  window.addEventListener("keydown", (e) => {
+    if (e.target && (e.target.tagName === "INPUT" || e.target.tagName === "BUTTON") && e.code === "Space") return;
+    if (e.code === "Escape") { clearMeasure(); requestRender(); }
+    if (mode !== "walk") return;
+    const k = keyMap[e.code];
+    if (k) { walk.keys[k] = true; e.preventDefault(); requestRender(); }
+    if (e.key === "Shift") walk.keys.run = true;
+  });
+  window.addEventListener("keyup", (e) => { const k = keyMap[e.code]; if (k) walk.keys[k] = false; if (e.key === "Shift") walk.keys.run = false; });
+  window.addEventListener("blur", () => { walk.keys = {}; });
+  pad.querySelectorAll("button").forEach((b) => {
+    const k = b.dataset.k;
+    b.addEventListener("pointerdown", (e) => { e.preventDefault(); walk.keys[k] = true; requestRender(); });
+    ["pointerup", "pointerleave", "pointercancel"].forEach((ev) => b.addEventListener(ev, () => { walk.keys[k] = false; }));
+  });
+
+  // ---------------------------------------------------------------- loop
+  let needs = true;
+  function requestRender() { needs = true; }
+  controls.addEventListener("change", requestRender);
+  const needle = document.getElementById("north-needle");
+  const tmpV = new THREE.Vector3();
+  function updateLabels() {
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    for (const l of labels) {
+      const show = layerOn[l.layer] !== false && (layers[l.layer] ? layers[l.layer].visible : true);
+      let ok = false;
+      if (show) {
+        const dist = camera.position.distanceTo(l.p);
+        if (dist < l.max) {
+          tmpV.copy(l.p).project(camera);
+          if (tmpV.z < 1 && Math.abs(tmpV.x) < 1.1 && Math.abs(tmpV.y) < 1.1) {
+            ok = true;
+            l.el.style.transform = `translate(${((tmpV.x + 1) / 2) * w}px, ${((1 - tmpV.y) / 2) * h}px) translate(-50%, -100%)`;
+          }
+        }
+      }
+      if (ok !== l.shown) { l.el.style.display = ok ? "" : "none"; l.shown = ok; }
+    }
+  }
+  let last = performance.now();
+  function frame(now) {
+    const dt = Math.min(0.1, (now - last) / 1000);
+    last = now;
+    if (mode === "walk") {
+      const k = walk.keys, sp = (k.run ? 4.2 : 1.6) * dt;
+      if (k.tl) walk.yaw -= 1.4 * dt;
+      if (k.tr) walk.yaw += 1.4 * dt;
+      const fx = Math.sin(walk.yaw), fy = Math.cos(walk.yaw);
+      if (k.fwd) { walk.x += fx * sp; walk.y += fy * sp; }
+      if (k.back) { walk.x -= fx * sp; walk.y -= fy * sp; }
+      if (k.sl) { walk.x -= fy * sp; walk.y += fx * sp; }
+      if (k.sr) { walk.x += fy * sp; walk.y -= fx * sp; }
+      const gz = groundZ(walk.x, walk.y);
+      const z = (Number.isNaN(gz) ? 100 : gz) + EYE;
+      camera.position.copy(V(walk.x, walk.y, z));
+      const cp = Math.cos(walk.pitch);
+      camera.lookAt(V(walk.x + fx * cp, walk.y + fy * cp, z + Math.sin(walk.pitch)));
+      if (k.fwd || k.back || k.sl || k.sr || k.tl || k.tr) needs = true;
+    } else if (controls.update()) needs = true;
+    if (hoverAt && !down) {
+      const g = pick(hoverAt.x, hoverAt.y, false);
+      cursorEl.textContent = g ? coordText(g.p) : "Point at the ground for coordinates";
+      hoverAt = null;
+    }
+    if (needs) {
+      const dir = camera.getWorldDirection(tmpV);
+      needle.setAttribute("transform", `rotate(${(-Math.atan2(dir.x, -dir.z) * 180) / Math.PI} 23 23)`);
+      renderer.render(scene, camera);
+      updateLabels();
+      needs = false;
+    }
+    requestAnimationFrame(frame);
+  }
+  function resize() {
+    const w = stage.clientWidth, h = stage.clientHeight;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / Math.max(1, h);
+    camera.updateProjectionMatrix();
+    requestRender();
+  }
+  new ResizeObserver(resize).observe(stage);
+
+  // ---------------------------------------------------------------- start
+  setTimeout(() => {
+    try {
+      D = JSON.parse(document.getElementById("model").textContent);
+      DET = new Grid(D.det);
+      OV = new Grid(D.ov);
+      buildTerrain();
+      buildBuildings();
+      buildTrees();
+      buildLinework();
+      buildSites();
+      buildRoof();
+      addGoto("Downtown", () => { home(); downtownFacts(); }, "downtown");
+      D.sites.forEach((s, i) => addGoto(`S${i + 1} ${s.title.split("· ")[1]}`, () => { flyTo(s); siteFacts(s); }, "s" + (i + 1)));
+      applyLayers();
+      resize();
+      home();
+      downtownFacts();
+      const h = (location.hash || "").replace("#", "");
+      const btn = document.getElementById("go-" + h);
+      (btn || gotoBtns[0]).click();
+      loading.hidden = true;
+      requestAnimationFrame(frame);
+    } catch (err) {
+      loading.textContent = "The model could not be built in this browser: " + err.message;
+      console.error(err);
+    }
+  }, 30);
+})();
+</script>

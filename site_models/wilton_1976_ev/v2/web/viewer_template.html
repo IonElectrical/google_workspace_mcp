@@ -76,6 +76,19 @@ body { background: var(--bg); color: var(--ink); font: 14px/1.45 var(--font-body
 #walkpad .left { grid-column: 1; grid-row: 2; }
 #walkpad .down { grid-column: 2; grid-row: 2; }
 #walkpad .right { grid-column: 3; grid-row: 2; }
+#walkpad .fup { grid-column: 1; grid-row: 1; }
+#walkpad .fdn { grid-column: 3; grid-row: 1; }
+.chip-btn { pointer-events: auto; background: rgba(15, 22, 19, 0.82); color: #eef4f0; border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 4px; padding: 6px 11px; font: 600 12px/1.2 var(--font-body); }
+#tourbox { position: absolute; left: max(12px, env(safe-area-inset-left, 0px)); right: 12px; bottom: 56px; max-width: 600px; max-height: 42%; overflow-y: auto;
+  background: rgba(13, 20, 17, 0.9); color: #eef4f0; border-radius: 6px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
+#tourbox h2 { color: #ffffff; font: 600 18px/1.2 var(--font-display); }
+#tourbox p { font-size: 13.5px; line-height: 1.5; color: #dde7e1; }
+#tourbox .tb-head { display: flex; justify-content: space-between; gap: 8px; font: 600 11px/1.2 var(--font-display); letter-spacing: 0.12em; text-transform: uppercase; color: #9fb4aa; }
+#tourbox button { background: rgba(255, 255, 255, 0.1); color: #ffffff; border-color: rgba(255, 255, 255, 0.28); }
+#tourbox button[aria-pressed="true"] { background: #4ebfb1; color: #062320; border-color: #4ebfb1; }
+#tourbox button:disabled { opacity: 0.4; cursor: default; }
+#tourbox .hear { background: #4ebfb1; color: #062320; border-color: #4ebfb1; }
+.check { display: flex; gap: 8px; align-items: center; }
 #loading { position: absolute; inset: 0; display: grid; place-items: center; background: #bcd2e4; color: #17211d; font: 500 15px/1.4 var(--font-body); text-align: center; padding-inline: 24px; }
 
 /* Instrument rail */
@@ -131,6 +144,8 @@ ul.notes { margin: 0; padding-left: 18px; display: flex; flex-direction: column;
   #rail-toggle { display: inline-block; }
   #hud-bl { bottom: 10px; }
   #walkpad { bottom: 52px; }
+  #tourbox { bottom: 48px; max-height: 58%; padding: 10px 12px; }
+  #tourbox p { font-size: 13px; }
   .brand b { font-size: 14px; }
 }
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
@@ -151,12 +166,31 @@ ul.notes { margin: 0; padding-left: 18px; display: flex; flex-direction: column;
     <div class="hud" id="hud-bl">
       <div class="chip-hud" id="cursor">Point at the ground for coordinates</div>
       <div class="chip-hud" id="mode-hint">Drag to orbit · right-drag to pan · scroll to zoom</div>
+      <div class="chip-hud" id="speedo" hidden></div>
+      <button class="chip-btn" id="flybtn" hidden>Take off</button>
     </div>
     <div id="walkpad" hidden>
       <button class="up" data-k="fwd" aria-label="Walk forward">▲</button>
       <button class="left" data-k="tl" aria-label="Turn left">◀</button>
       <button class="down" data-k="back" aria-label="Walk back">▼</button>
       <button class="right" data-k="tr" aria-label="Turn right">▶</button>
+      <button class="fup" data-k="up" aria-label="Climb" hidden>⤒</button>
+      <button class="fdn" data-k="down" aria-label="Descend" hidden>⤓</button>
+    </div>
+    <div id="tourbox" hidden aria-live="polite">
+      <div class="tb-head"><span id="tb-step"></span><span id="tb-here"></span></div>
+      <h2 id="tb-title"></h2>
+      <p id="tb-text"></p>
+      <div class="row">
+        <button id="tb-hear" class="hear" hidden>Tap to hear the narrator</button>
+        <button id="tb-prev">◀ Back</button>
+        <button id="tb-play">Pause</button>
+        <button id="tb-next">Next ▶</button>
+        <button id="tb-audio" aria-pressed="true">Narration on</button>
+        <button id="tb-auto" aria-pressed="true">Auto-advance</button>
+        <button id="tb-cap" aria-pressed="true">Captions</button>
+        <button id="tb-end">End tour</button>
+      </div>
     </div>
     <div id="loading">Loading the Wilton model…</div>
   </div>
@@ -176,12 +210,24 @@ ul.notes { margin: 0; padding-left: 18px; display: flex; flex-direction: column;
         <div class="seg" role="group" aria-label="Navigation mode">
           <button id="m-orbit" aria-pressed="true">Orbit</button>
           <button id="m-walk" aria-pressed="false">Walk (5.5 ft eye)</button>
+          <button id="m-drive" aria-pressed="false">Drive / fly</button>
         </div>
         <button id="m-measure" aria-pressed="false">Measure</button>
       </div>
       <div class="readout" id="readout">
         <p class="small muted">Click a stall, trench, roof plane or building to read its numbers. Turn on <b>Measure</b> and click two points for distance and slope in feet.</p>
       </div>
+    </div>
+
+    <div class="sec" id="tour-sec">
+      <span class="eyebrow">Partner tour</span>
+      <p class="small muted">The roadster flies to each key spot while a narrator explains what we measured and what is still open. Captions always show; the voice is this device's built-in speech.</p>
+      <div class="row">
+        <button id="t-start">Start the tour</button>
+        <button id="t-lead" aria-pressed="false" hidden>Lead for everyone here</button>
+      </div>
+      <label class="small check" id="t-follow-wrap" hidden><input type="checkbox" id="t-follow" checked> Follow whoever is leading</label>
+      <p class="small muted" id="t-room" hidden></p>
     </div>
 
     <div class="sec" id="site-sec"></div>
@@ -487,8 +533,28 @@ ul.notes { margin: 0; padding-left: 18px; display: flex; flex-direction: column;
     linesFromPolylines(D.ovb.noheight, 0xc47ad6, "overview");
   }
 
+  let TREES = null;
+  const treeGrid = {};
+  function inTree(x, y, z) {   // is a camera at (x, y, z) inside a lidar tree crown?
+    if (!TREES) return false;
+    const cx = Math.floor(x / 10), cy = Math.floor(y / 10), T = TREES;
+    for (let a = -1; a <= 1; a++) for (let b = -1; b <= 1; b++) {
+      const list = treeGrid[(cx + a) + "," + (cy + b)];
+      if (!list) continue;
+      for (const i of list) {
+        const gz = T[i * 5 + 2], h = T[i * 5 + 3], cr = T[i * 5 + 4];
+        if (Math.hypot(x - T[i * 5], y - T[i * 5 + 1]) < cr + 0.6 && z > gz + 0.25 * h && z < gz + h + 0.6) return true;
+      }
+    }
+    return false;
+  }
   function buildTrees() {
     const T = dec(D.trees, Float32Array), n = T.length / 5, r = rng(1976);
+    TREES = T;
+    for (let i = 0; i < n; i++) {
+      const key = Math.floor(T[i * 5] / 10) + "," + Math.floor(T[i * 5 + 1] / 10);
+      (treeGrid[key] || (treeGrid[key] = [])).push(i);
+    }
     const conifer = [];
     for (let i = 0; i < n; i++) conifer.push(r() < 0.3);
     const nc = conifer.filter(Boolean).length;
@@ -743,22 +809,52 @@ ul.notes { margin: 0; padding-left: 18px; display: flex; flex-direction: column;
   hint.textContent = ORBIT_HINT;
   if (coarse) cursorEl.hidden = true;
   function setMode(m) {
+    const prev = mode;
+    if (prev === "tour" && m !== "tour") endTour(true);
     mode = m;
     btnOrbit.setAttribute("aria-pressed", m === "orbit");
     btnWalk.setAttribute("aria-pressed", m === "walk");
+    btnDrive.setAttribute("aria-pressed", m === "drive");
     controls.enabled = m === "orbit";
-    pad.hidden = !(m === "walk" && coarse);
+    pad.hidden = !((m === "walk" || m === "drive") && coarse);
+    speedo.hidden = !(m === "drive" || m === "tour");
+    flyBtn.hidden = m !== "drive";
     if (m === "walk") {
-      const t = L(controls.target);
-      const dir = new THREE.Vector3(); camera.getWorldDirection(dir);
-      walk.x = t.x; walk.y = t.y; walk.yaw = Math.atan2(dir.x, -dir.z); walk.pitch = -0.05;
+      if ((prev === "drive" || prev === "tour") && carObj.visible) {
+        walk.x = car.x - Math.sin(car.yaw) * 4; walk.y = car.y - Math.cos(car.yaw) * 4; walk.yaw = car.yaw;
+      } else {
+        const t = L(controls.target);
+        const dir = new THREE.Vector3(); camera.getWorldDirection(dir);
+        walk.x = t.x; walk.y = t.y; walk.yaw = Math.atan2(dir.x, -dir.z);
+      }
+      walk.pitch = -0.05;
       hint.textContent = coarse ? "Drag to look · arrows to walk" : "W A S D or arrows to walk · drag to look · Shift to walk faster";
+    } else if (m === "drive") {
+      if (prev === "walk") {
+        car.x = walk.x + Math.sin(walk.yaw) * 6; car.y = walk.y + Math.cos(walk.yaw) * 6; car.yaw = walk.yaw;
+      } else if (prev !== "tour") {
+        const t = L(controls.target), dir = new THREE.Vector3();
+        camera.getWorldDirection(dir);
+        car.x = t.x; car.y = t.y; car.yaw = Math.atan2(dir.x, -dir.z);
+      }
+      if (prev !== "tour") { const g = groundZ(car.x, car.y); car.z = Number.isNaN(g) ? car.z : g; car.fly = false; car.hold = false; }
+      else { if (car.hold) car.fly = true; car.hold = false; }
+      car.v = 0; car.vz = 0; car.landing = false; car.steer = 0; camYaw = 0;
+      carObj.visible = true; carShadow.visible = true;
+      updateFlyUI(); poseCar(); chase(0, true);
+      hint.textContent = coarse ? "▲ ▼ drive · ◀ ▶ steer · drag to look around" : "W / S drive · A / D steer · Shift for speed · F take off or land · E / Q climb or descend · drag to look around";
+    } else if (m === "tour") {
+      hint.textContent = coarse ? "Partner tour · drag to look around at each stop" : "Partner tour · at each stop, drag to look around and scroll to zoom";
     } else {
-      const dir = new THREE.Vector3();
-      camera.getWorldDirection(dir);
-      controls.target.copy(camera.position).add(dir.multiplyScalar(25));
+      if ((prev === "drive" || prev === "tour") && carObj.visible) controls.target.copy(V(car.x, car.y, car.z + 1));
+      else {
+        const dir = new THREE.Vector3();
+        camera.getWorldDirection(dir);
+        controls.target.copy(camera.position).add(dir.multiplyScalar(25));
+      }
       hint.textContent = ORBIT_HINT;
     }
+    syncPresence();
     requestRender();
   }
   btnOrbit.onclick = () => setMode("orbit");
@@ -766,7 +862,13 @@ ul.notes { margin: 0; padding-left: 18px; display: flex; flex-direction: column;
   btnMeasure.onclick = () => { measuring = !measuring; btnMeasure.setAttribute("aria-pressed", measuring); if (!measuring) clearMeasure(); requestRender(); };
 
   function flyTo(site) {
-    if (mode === "walk") {
+    if (mode === "tour") setMode("orbit");
+    if (mode === "drive") {
+      car.x = site.eye[0]; car.y = site.eye[1];
+      car.yaw = Math.atan2(site.center[0] - site.eye[0], site.center[1] - site.eye[1]);
+      car.v = 0; car.fly = false; car.landing = false; car.hold = false; camYaw = 0;
+      updateFlyUI(); poseCar(); chase(0, true);
+    } else if (mode === "walk") {
       walk.x = site.eye[0]; walk.y = site.eye[1];
       walk.yaw = Math.atan2(site.center[0] - site.eye[0], site.center[1] - site.eye[1]);
       walk.pitch = -0.08;
@@ -779,11 +881,376 @@ ul.notes { margin: 0; padding-left: 18px; display: flex; flex-direction: column;
   }
   function home() {
     const b = D.texBox, cx = (b[0] + b[2]) / 2, cy = (b[1] + b[3]) / 2, cz = groundZ(cx, cy);
-    if (mode === "walk") setMode("orbit");
+    if (mode !== "orbit") setMode("orbit");
     controls.target.copy(V(cx, cy, cz));
     camera.position.copy(V(cx - 420, cy - 620, cz + 520));
     controls.update();
     requestRender();
+  }
+
+
+  // ---------------------------------------------------------------- roadster (a generic electric roadster, not a branded model)
+  const car = { x: 0, y: 0, z: 0, yaw: 0, v: 0, vz: 0, steer: 0, fly: false, hold: false, landing: false };
+  let carObj = null, carShadow = null, camYaw = 0;
+  const btnDrive = document.getElementById("m-drive"), speedo = document.getElementById("speedo"), flyBtn = document.getElementById("flybtn");
+  const AXX = new THREE.Vector3(1, 0, 0), AXY = new THREE.Vector3(0, 1, 0), AXZ = new THREE.Vector3(0, 0, 1);
+  const qa = new THREE.Quaternion(), qb = new THREE.Quaternion();
+  function buildCar() {
+    const g = new THREE.Group();
+    const paint = new THREE.MeshPhongMaterial({ color: 0xb3121c, specular: 0x777777, shininess: 90 });
+    const glass = new THREE.MeshPhongMaterial({ color: 0x101920, specular: 0x99aabb, shininess: 120 });
+    const tire = new THREE.MeshLambertMaterial({ color: 0x141414 });
+    const rim = new THREE.MeshPhongMaterial({ color: 0xbfc4c8, specular: 0xffffff, shininess: 70 });
+    const shape = (pts) => { const s = new THREE.Shape(); s.moveTo(pts[0][0], pts[0][1]); for (const q of pts.slice(1)) s.lineTo(q[0], q[1]); s.closePath(); return s; };
+    const body = new THREE.Mesh(new THREE.ExtrudeGeometry(shape([[-2.15, 0.3], [2.08, 0.3], [2.2, 0.48], [2.06, 0.66], [0.78, 0.84], [-1.62, 0.9], [-2.18, 0.84]]),
+      { depth: 1.7, bevelEnabled: true, bevelThickness: 0.07, bevelSize: 0.06, bevelSegments: 2 }), paint);
+    body.position.z = -0.85;
+    const cabin = new THREE.Mesh(new THREE.ExtrudeGeometry(shape([[0.8, 0.83], [-0.05, 1.15], [-0.85, 1.13], [-1.62, 0.89]]),
+      { depth: 1.44, bevelEnabled: true, bevelThickness: 0.04, bevelSize: 0.04, bevelSegments: 1 }), glass);
+    cabin.position.z = -0.72;
+    g.add(body, cabin);
+    for (const [x, z] of [[1.38, 0.86], [1.38, -0.86], [-1.36, 0.86], [-1.36, -0.86]]) {
+      const w = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.34, 0.26, 20), tire);
+      w.rotation.x = Math.PI / 2; w.position.set(x, 0.34, z);
+      const r = new THREE.Mesh(new THREE.CylinderGeometry(0.21, 0.21, 0.27, 12), rim);
+      r.rotation.x = Math.PI / 2; r.position.set(x, 0.34, z);
+      g.add(w, r);
+    }
+    for (const z of [0.6, -0.6]) {
+      const hl = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.07, 0.34), new THREE.MeshBasicMaterial({ color: 0xf4f8ff }));
+      hl.position.set(2.15, 0.55, z);
+      const tl = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.06, 0.4), new THREE.MeshBasicMaterial({ color: 0xd8141e }));
+      tl.position.set(-2.2, 0.78, z);
+      g.add(hl, tl);
+    }
+    g.visible = false;
+    scene.add(g);
+    carObj = g;
+    const sg = new THREE.Group();
+    const sm = new THREE.Mesh(new THREE.CircleGeometry(1, 28), new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.3, depthWrite: false }));
+    sm.rotation.x = -Math.PI / 2; sm.scale.set(2.5, 1.15, 1);
+    sg.add(sm); sg.visible = false; sg.userData.mat = sm.material;
+    scene.add(sg);
+    carShadow = sg;
+  }
+  function poseCar() {
+    const fx = Math.sin(car.yaw), fy = Math.cos(car.yaw), rx = Math.cos(car.yaw), ry = -Math.sin(car.yaw);
+    const g = (dx, dy) => { const z = groundZ(car.x + dx, car.y + dy); return Number.isNaN(z) ? car.z : z; };
+    let pitch = 0, roll = 0;
+    const gz = g(0, 0);
+    if (!car.fly && !car.hold) {
+      const zf = g(fx * 1.37, fy * 1.37), zb = g(-fx * 1.37, -fy * 1.37), zl = g(-rx * 0.86, -ry * 0.86), zr = g(rx * 0.86, ry * 0.86);
+      car.z = (zf + zb + zl + zr) / 4;
+      pitch = Math.atan2(zf - zb, 2.74); roll = Math.atan2(zl - zr, 1.72);
+    } else if (car.fly) {
+      pitch = Math.max(-0.3, Math.min(0.3, car.vz * 0.03));
+      roll = Math.max(-0.4, Math.min(0.4, car.steer * Math.min(1, Math.abs(car.v) / 15) * 0.4));
+    }
+    carObj.position.copy(V(car.x, car.y, car.z));
+    qa.setFromAxisAngle(AXY, Math.PI / 2 - car.yaw);
+    qa.multiply(qb.setFromAxisAngle(AXZ, pitch)).multiply(qb.setFromAxisAngle(AXX, roll));
+    carObj.quaternion.copy(qa);
+    carShadow.position.copy(V(car.x, car.y, gz + 0.05));
+    carShadow.rotation.y = Math.PI / 2 - car.yaw;
+    carShadow.userData.mat.opacity = 0.3 * Math.max(0.08, 1 - (car.z - gz) / 80);
+  }
+  function updateDrive(dt) {
+    const k = walk.keys, left = k.sl || k.tl, right = k.sr || k.tr;
+    const flying = car.fly && !car.landing;
+    const maxV = flying ? (k.run ? 70 : 32) : (k.run ? 29 : 13.5);
+    if (k.fwd) car.v = Math.min(maxV, car.v + (flying ? 12 : 5) * dt);
+    else if (k.back) car.v = Math.max(flying ? -10 : -5, car.v - (car.v > 0 ? 11 : 3.5) * dt);
+    else car.v *= Math.pow(flying ? 0.55 : 0.4, dt);
+    if (car.v > maxV) car.v = Math.max(maxV, car.v - 10 * dt);
+    if (Math.abs(car.v) < 0.04 && !k.fwd && !k.back) car.v = 0;
+    const want = (right ? 1 : 0) - (left ? 1 : 0);
+    car.steer += (want - car.steer) * Math.min(1, dt * 6);
+    const ang = (car.steer * 0.55) / (1 + Math.abs(car.v) / 10);
+    car.yaw += ((car.v * Math.tan(ang)) / 2.74) * dt;
+    if (flying && Math.abs(car.v) < 3) car.yaw += car.steer * 1.1 * dt;
+    car.x += Math.sin(car.yaw) * car.v * dt;
+    car.y += Math.cos(car.yaw) * car.v * dt;
+    const g = groundZ(car.x, car.y), floor = Number.isNaN(g) ? car.z : g;
+    if (car.landing) {
+      car.vz = -14; car.z += car.vz * dt;
+      if (car.z <= floor + 0.05) { car.fly = false; car.landing = false; car.vz = 0; updateFlyUI(); }
+    } else if (car.fly) {
+      car.vz = (k.up ? 9 : 0) - (k.down ? 9 : 0);
+      car.z = Math.min(floor + 900, Math.max(floor + 0.6, car.z + car.vz * dt));
+    }
+    poseCar();
+  }
+  const camLook = new THREE.Vector3();
+  function chase(dt, snap) {
+    if (!down) camYaw *= Math.exp(-dt * 0.5);
+    const flying = car.fly && !car.landing;
+    const back = flying ? 15 : 8.5, up = flying ? 5.5 : 2.7;
+    const yaw = car.yaw + camYaw;
+    let cx = 0, cy = 0, cz = 0;
+    for (const f of [1, 0.75, 0.55, 0.4]) {   // pull the camera in until it is clear of tree crowns
+      cx = car.x - Math.sin(yaw) * back * f; cy = car.y - Math.cos(yaw) * back * f; cz = car.z + up * (0.6 + 0.4 * f);
+      const g = groundZ(cx, cy);
+      if (!Number.isNaN(g)) cz = Math.max(cz, g + 1.3);
+      if (!inTree(cx, cy, cz)) break;
+    }
+    const want = V(cx, cy, cz);
+    if (snap) camera.position.copy(want); else camera.position.lerp(want, 1 - Math.exp(-dt * 5));
+    camLook.copy(V(car.x, car.y, car.z + 1.1));
+    camera.lookAt(camLook);
+  }
+  function setFly(on) {
+    if (on) { car.fly = true; car.landing = false; car.hold = false; car.z += 1.0; }
+    else if (car.fly) car.landing = true;
+    updateFlyUI();
+  }
+  function updateFlyUI() {
+    const flying = car.fly && !car.landing;
+    flyBtn.textContent = flying ? "Land" : "Take off";
+    pad.querySelectorAll(".fup, .fdn").forEach((b) => { b.hidden = !flying; });
+  }
+  flyBtn.onclick = () => setFly(!(car.fly && !car.landing));
+  btnDrive.onclick = () => setMode("drive");
+  function updateSpeedo() {
+    const g = groundZ(car.x, car.y);
+    const agl = Number.isNaN(g) ? 0 : car.z - g;
+    const mph = Math.round(Math.abs(car.v) * 2.23694);
+    speedo.textContent = `Roadster · ${mph} mph` + (agl > 2 ? ` · ${fmt(agl / FT, 0)} ft up` : "");
+  }
+
+  // ---------------------------------------------------------------- partner tour (narration + optional presenter sync)
+  const tour = { i: -1, phase: "idle", f: null, glide: null, paused: false, auto: true, audio: true, timer: 0, nar: 0, narDone: false, epoch: 0 };
+  let audioReady = false, leading = false, followOn = true, room = null, leaderPeer = null, voice = null;
+  const $ = (id) => document.getElementById(id);
+  const tb = { box: $("tourbox"), step: $("tb-step"), here: $("tb-here"), title: $("tb-title"), text: $("tb-text"), hear: $("tb-hear"),
+    prev: $("tb-prev"), play: $("tb-play"), next: $("tb-next"), audio: $("tb-audio"), auto: $("tb-auto"), cap: $("tb-cap"), end: $("tb-end") };
+  const tStart = $("t-start"), tLead = $("t-lead"), tFollowWrap = $("t-follow-wrap"), tFollow = $("t-follow"), tRoom = $("t-room");
+  const stops = () => (D && D.tour) || [];
+  const tmpT = new THREE.Vector3(), bp = new THREE.Vector3(), bp2 = new THREE.Vector3();
+  function lerpAngle(a, b, t) { let d = ((b - a + Math.PI) % (2 * Math.PI)) - Math.PI; if (d < -Math.PI) d += 2 * Math.PI; return a + d * Math.max(0, Math.min(1, t)); }
+  function bez(f, t, out) {
+    const u = 1 - t;
+    return out.set(0, 0, 0).addScaledVector(f.p0, u * u * u).addScaledVector(f.c1, 3 * u * u * t).addScaledVector(f.c2, 3 * u * t * t).addScaledVector(f.p1, t * t * t);
+  }
+  function startTour(i) {
+    audioReady = true;
+    if (mode !== "tour") setMode("tour");
+    tourGo(i || 0);
+  }
+  function tourGo(i) {
+    const S = stops();
+    if (i < 0 || i >= S.length) return;
+    clearTimeout(tour.timer);
+    speechStop();
+    if (!carObj.visible) {
+      const t = L(controls.target);
+      car.x = t.x; car.y = t.y;
+      const g = groundZ(car.x, car.y); car.z = Number.isNaN(g) ? t.z : g;
+      carObj.visible = true; carShadow.visible = true;
+    }
+    tour.i = i; tour.paused = false; tour.glide = null; tour.narDone = false;
+    const s = S[i];
+    const p0 = new THREE.Vector3(car.x, car.y, car.z), p1 = new THREE.Vector3(s.park[0], s.park[1], s.park[2]);
+    const dist = Math.hypot(p1.x - p0.x, p1.y - p0.y);
+    const top = Math.max(p0.z, p1.z) + Math.max(25, Math.min(140, 20 + dist * 0.3));
+    tour.f = { t: 0, dur: dist < 2 ? 1.2 : Math.max(4, Math.min(12, 2 + dist / 30)), p0, p1,
+      c1: new THREE.Vector3(p0.x + (p1.x - p0.x) * 0.2, p0.y + (p1.y - p0.y) * 0.2, top),
+      c2: new THREE.Vector3(p0.x + (p1.x - p0.x) * 0.8, p0.y + (p1.y - p0.y) * 0.8, top),
+      yawEnd: Math.atan2(s.target[0] - s.park[0], s.target[1] - s.park[1]) };
+    tour.phase = "flying";
+    controls.enabled = false;
+    car.fly = true; car.hold = false; car.landing = false; car.steer = 0;
+    showStop(true);
+    syncPresence();
+    if (leading) emitTour();
+    requestRender();
+  }
+  function updateTour(dt) {
+    const f = tour.f;
+    if (tour.phase === "flying" && f) {
+      if (!tour.paused) f.t = Math.min(1, f.t + dt / f.dur);
+      const e = f.t < 0.5 ? 2 * f.t * f.t : 1 - Math.pow(-2 * f.t + 2, 2) / 2;
+      bez(f, e, bp); bez(f, Math.min(1, e + 0.01), bp2);
+      const dx = bp2.x - bp.x, dy = bp2.y - bp.y;
+      let yaw = Math.hypot(dx, dy) > 1e-4 ? Math.atan2(dx, dy) : car.yaw;
+      if (f.t > 0.82) yaw = lerpAngle(yaw, f.yawEnd, (f.t - 0.82) / 0.18);
+      const ox = car.x, oy = car.y, oz = car.z;
+      car.x = bp.x; car.y = bp.y; car.z = bp.z; car.yaw = yaw;
+      if (dt > 0) { car.v = Math.hypot(car.x - ox, car.y - oy) / dt; car.vz = (car.z - oz) / dt; }
+      poseCar();
+      chase(dt, false);
+      if (f.t >= 1) arrive();
+      needs = true;
+    } else if (tour.phase === "glide" && tour.glide) {
+      const g = tour.glide;
+      if (!tour.paused) g.t = Math.min(1, g.t + dt / g.dur);
+      const e = g.t * g.t * (3 - 2 * g.t);
+      camera.position.lerpVectors(g.fromPos, g.toPos, e);
+      tmpT.lerpVectors(g.fromTarget, g.toTarget, e);
+      camera.lookAt(tmpT);
+      if (g.t >= 1) { controls.target.copy(g.toTarget); controls.enabled = true; controls.update(); tour.phase = "stop"; narrate(); }
+      needs = true;
+    } else if (tour.phase === "stop" && controls.update()) needs = true;
+  }
+  function arrive() {
+    const s = stops()[tour.i], f = tour.f;
+    car.x = f.p1.x; car.y = f.p1.y; car.z = f.p1.z; car.yaw = f.yawEnd; car.v = 0; car.vz = 0;
+    const g = groundZ(car.x, car.y);
+    car.fly = false;
+    car.hold = !Number.isNaN(g) && car.z > g + 1.0;
+    poseCar();
+    tour.glide = { t: 0, dur: 2.2, fromPos: camera.position.clone(), toPos: V(s.camera[0], s.camera[1], s.camera[2]),
+      fromTarget: V(car.x, car.y, car.z + 1.1), toTarget: V(s.target[0], s.target[1], s.target[2]) };
+    tour.phase = "glide";
+    const m = /^s([1-4])$/.exec(s.id);
+    if (m) { siteFacts(D.sites[+m[1] - 1]); gotoBtns.forEach((b) => b.setAttribute("aria-pressed", b.id === "go-" + s.id)); }
+    else if (s.id === "welcome" || s.id === "wrap") downtownFacts();
+    showStop(false);
+  }
+  function showStop(flying) {
+    const S = stops(), s = S[tour.i];
+    tb.box.hidden = false;
+    tb.step.textContent = `Stop ${tour.i + 1} of ${S.length}` + (flying ? " · flying in" : "");
+    tb.title.textContent = s.title;
+    tb.text.textContent = s.narration;
+    tb.prev.disabled = tour.i <= 0;
+    tb.next.disabled = tour.i >= S.length - 1;
+    tb.play.textContent = tour.paused ? "Resume" : "Pause";
+    tb.audio.textContent = tour.audio ? "Narration on" : "Narration off";
+    tb.audio.setAttribute("aria-pressed", tour.audio);
+    tb.auto.setAttribute("aria-pressed", tour.auto);
+    tb.hear.hidden = audioReady || !tour.audio || !("speechSynthesis" in window);
+  }
+  function pickVoice() {
+    if (!("speechSynthesis" in window)) return null;
+    const vs = speechSynthesis.getVoices() || [];
+    const en = vs.filter((v) => /^en[-_]US/i.test(v.lang));
+    for (const p of ["Natural", "Google US English", "Samantha", "Aria", "Jenny", "Guy"]) { const v = en.find((x) => x.name.includes(p)); if (v) return v; }
+    return en[0] || vs.find((v) => /^en/i.test(v.lang)) || null;
+  }
+  function speechStop() { tour.nar++; clearTimeout(tour.fallback); try { if ("speechSynthesis" in window) speechSynthesis.cancel(); } catch (e) { /* ignore */ } }
+  function narrate() {
+    const s = stops()[tour.i], token = ++tour.nar, myI = tour.i;
+    tour.narDone = false;
+    const done = () => {
+      if (token !== tour.nar || tour.i !== myI || tour.phase !== "stop") return;
+      tour.narDone = true;
+      scheduleNext();
+    };
+    clearTimeout(tour.fallback);
+    const est = Math.max(6000, (s.narration.split(/\s+/).length / 2.6) * 1000);
+    if (tour.audio && audioReady && "speechSynthesis" in window) {
+      tour.fallback = setTimeout(done, est * 1.6 + 8000);  // a device with no usable voice never ends the utterance
+      try {
+        speechSynthesis.cancel();
+        voice = voice || pickVoice();
+        const parts = s.narration.match(/[^.!?]+[.!?]+(\s|$)|[^.!?]+$/g) || [s.narration];
+        parts.forEach((p, k) => {
+          const u = new SpeechSynthesisUtterance(p.trim());
+          if (voice) u.voice = voice;
+          u.rate = 1.0;
+          if (k === parts.length - 1) { u.onend = done; u.onerror = done; }
+          speechSynthesis.speak(u);
+        });
+      } catch (e) { done(); }
+    } else {
+      tour.timer = setTimeout(done, est);
+    }
+  }
+  function scheduleNext() {
+    clearTimeout(tour.timer);
+    const myI = tour.i;
+    if (!tour.auto || tour.paused || myI >= stops().length - 1) return;
+    if (!leading && followOn && leaderPeer) return;
+    tour.timer = setTimeout(() => { if (tour.i === myI && !tour.paused && tour.phase === "stop") tourGo(myI + 1); }, 2500);
+  }
+  function togglePause() {
+    tour.paused = !tour.paused;
+    if (tour.paused) { clearTimeout(tour.timer); try { speechSynthesis.pause(); } catch (e) { /* ignore */ } }
+    else { try { speechSynthesis.resume(); } catch (e) { /* ignore */ } if (tour.phase === "stop" && tour.narDone) scheduleNext(); }
+    tb.play.textContent = tour.paused ? "Resume" : "Pause";
+    if (leading) emitTour();
+  }
+  function endTour(viaSetMode) {
+    if (tour.phase === "idle") return;
+    clearTimeout(tour.timer);
+    speechStop();
+    tour.phase = "idle"; tour.i = -1; tour.f = null; tour.glide = null; tour.paused = false;
+    tb.box.hidden = true;
+    if (leading) emitTour("end");
+    if (!viaSetMode && mode === "tour") setMode("orbit");
+    syncPresence();
+  }
+  const unlock = () => { audioReady = true; };
+  tStart.onclick = () => startTour(0);
+  tb.hear.onclick = () => { audioReady = true; tb.hear.hidden = true; if (tour.phase === "stop") narrate(); };
+  tb.prev.onclick = () => { unlock(); if (!leading && leaderPeer) setFollow(false); tourGo(tour.i - 1); };
+  tb.next.onclick = () => { unlock(); if (!leading && leaderPeer) setFollow(false); tourGo(tour.i + 1); };
+  tb.play.onclick = () => { unlock(); togglePause(); };
+  tb.audio.onclick = () => {
+    unlock();
+    tour.audio = !tour.audio;
+    speechStop();
+    showStop(tour.phase === "flying");
+    if (tour.phase === "stop") narrate();
+  };
+  tb.auto.onclick = () => { tour.auto = !tour.auto; tb.auto.setAttribute("aria-pressed", tour.auto); if (tour.auto && tour.narDone) scheduleNext(); else clearTimeout(tour.timer); };
+  tb.end.onclick = () => endTour(false);
+  tb.cap.onclick = () => { const on = tb.text.hidden; tb.text.hidden = !on; tb.cap.setAttribute("aria-pressed", on); };
+  function setFollow(on) { followOn = on; tFollow.checked = on; syncPresence(); }
+  tFollow.addEventListener("change", () => setFollow(tFollow.checked));
+  tLead.onclick = () => {
+    leading = !leading;
+    tLead.setAttribute("aria-pressed", leading);
+    if (leading) { audioReady = true; tour.epoch = Date.now(); if (tour.phase === "idle") startTour(0); else emitTour(); }
+    syncPresence();
+  };
+  function initRoom() {
+    if (!window.claude || typeof window.claude.use !== "function") return;
+    window.claude.use("room").then((r) => {
+      if (!r) return;
+      room = r;
+      tLead.hidden = false; tFollowWrap.hidden = false; tRoom.hidden = false;
+      tRoom.textContent = "Checking who else has this page open…";
+      r.on("tour", (msg) => {
+        if (msg.sameTab) return;
+        const d = msg.data && typeof msg.data === "object" ? msg.data : {};
+        leaderPeer = msg.peer;
+        if (!followOn || leading) return;
+        applyRemote(d);
+      }, () => {});
+      r.onPeers((ch) => {
+        const n = ch.peers.filter((p) => p.kind === "viewer").length;
+        tRoom.textContent = n > 1 ? `${n} people have this page open. Lead the tour and everyone who follows flies along and hears it on their own device.` : "Only you have this page open right now.";
+        tb.here.textContent = n > 1 ? `${n} here` : "";
+        if (leading && ch.joined.some((p) => !p.isMe)) emitTour();
+        if (leaderPeer && ch.left.some((p) => p.peer === leaderPeer)) leaderPeer = null;
+      }, () => {});
+      setInterval(() => { if (leading && tour.phase !== "idle") emitTour(); }, 10000);
+      syncPresence();
+    }).catch(() => {});
+  }
+  function emitTour(state) {
+    if (!room || !leading) return;
+    const st = state || (tour.phase === "idle" ? "end" : tour.paused ? "pause" : "go");
+    room.emit("tour", { i: tour.i, state: st, epoch: tour.epoch }).catch((e) => {
+      if (e && e.code === "not_permitted") {
+        leading = false;
+        tLead.setAttribute("aria-pressed", "false");
+        tRoom.textContent = "Only people who can edit this page can lead the tour. You can still follow or tour on your own.";
+      }
+    });
+  }
+  function applyRemote(d) {
+    const i = Number.isInteger(d.i) ? d.i : -1;
+    if (d.state === "end") { if (mode === "tour") endTour(false); return; }
+    if (i < 0 || i >= stops().length) return;
+    if (mode !== "tour") setMode("tour");
+    if (i !== tour.i) tourGo(i);
+    if ((d.state === "pause") !== tour.paused) togglePause();
+  }
+  function syncPresence() {
+    if (!room) return;
+    room.presence({ mode, stop: tour.i, follow: followOn && leaderPeer && !leading ? { of: leaderPeer } : null }).catch(() => {});
   }
 
   // site facts
@@ -866,13 +1333,16 @@ ul.notes { margin: 0; padding-left: 18px; display: flex; flex-direction: column;
 
   // ---------------------------------------------------------------- input
   let down = null;
-  canvas.addEventListener("pointerdown", (e) => { down = { x: e.clientX, y: e.clientY, lx: e.clientX, ly: e.clientY, id: e.pointerId, btn: e.button }; if (mode === "walk") canvas.setPointerCapture(e.pointerId); });
+  canvas.addEventListener("pointerdown", (e) => { down = { x: e.clientX, y: e.clientY, lx: e.clientX, ly: e.clientY, id: e.pointerId, btn: e.button }; if (mode === "walk" || mode === "drive") canvas.setPointerCapture(e.pointerId); });
   canvas.addEventListener("pointermove", (e) => {
     if (down && mode === "walk" && e.pointerId === down.id) {
       walk.yaw += (e.clientX - down.lx) * 0.0045;
       walk.pitch = Math.max(-1.35, Math.min(1.35, walk.pitch - (e.clientY - down.ly) * 0.0045));
       down.lx = e.clientX; down.ly = e.clientY;
       requestRender();
+    } else if (down && mode === "drive" && e.pointerId === down.id) {
+      camYaw -= (e.clientX - down.lx) * 0.006;
+      down.lx = e.clientX; down.ly = e.clientY;
     }
     hoverAt = { x: e.clientX, y: e.clientY };
   });
@@ -897,12 +1367,23 @@ ul.notes { margin: 0; padding-left: 18px; display: flex; flex-direction: column;
   window.addEventListener("keydown", (e) => {
     if (e.target && (e.target.tagName === "INPUT" || e.target.tagName === "BUTTON") && e.code === "Space") return;
     if (e.code === "Escape") { clearMeasure(); requestRender(); }
-    if (mode !== "walk") return;
+    if (mode === "drive") {
+      if (e.code === "KeyF") { setFly(!(car.fly && !car.landing)); e.preventDefault(); return; }
+      if (e.code === "KeyE" || e.code === "PageUp") { walk.keys.up = true; e.preventDefault(); return; }
+      if (e.code === "KeyQ" || e.code === "PageDown") { walk.keys.down = true; e.preventDefault(); return; }
+    }
+    if (mode !== "walk" && mode !== "drive") return;
     const k = keyMap[e.code];
     if (k) { walk.keys[k] = true; e.preventDefault(); requestRender(); }
     if (e.key === "Shift") walk.keys.run = true;
   });
-  window.addEventListener("keyup", (e) => { const k = keyMap[e.code]; if (k) walk.keys[k] = false; if (e.key === "Shift") walk.keys.run = false; });
+  window.addEventListener("keyup", (e) => {
+    const k = keyMap[e.code];
+    if (k) walk.keys[k] = false;
+    if (e.key === "Shift") walk.keys.run = false;
+    if (e.code === "KeyE" || e.code === "PageUp") walk.keys.up = false;
+    if (e.code === "KeyQ" || e.code === "PageDown") walk.keys.down = false;
+  });
   window.addEventListener("blur", () => { walk.keys = {}; });
   pad.querySelectorAll("button").forEach((b) => {
     const k = b.dataset.k;
@@ -953,6 +1434,14 @@ ul.notes { margin: 0; padding-left: 18px; display: flex; flex-direction: column;
       const cp = Math.cos(walk.pitch);
       camera.lookAt(V(walk.x + fx * cp, walk.y + fy * cp, z + Math.sin(walk.pitch)));
       if (k.fwd || k.back || k.sl || k.sr || k.tl || k.tr) needs = true;
+    } else if (mode === "drive") {
+      updateDrive(dt);
+      chase(dt, false);
+      updateSpeedo();
+      needs = true;
+    } else if (mode === "tour") {
+      updateTour(dt);
+      if (tour.phase === "flying") updateSpeedo();
     } else if (controls.update()) needs = true;
     if (hoverAt && !down) {
       const g = pick(hoverAt.x, hoverAt.y, false);
@@ -989,6 +1478,9 @@ ul.notes { margin: 0; padding-left: 18px; display: flex; flex-direction: column;
       buildLinework();
       buildSites();
       buildRoof();
+      buildCar();
+      if (!stops().length) document.getElementById("tour-sec").hidden = true;
+      initRoom();
       addGoto("Downtown", () => { home(); downtownFacts(); }, "downtown");
       D.sites.forEach((s, i) => addGoto(`S${i + 1} ${s.title.split("· ")[1]}`, () => { flyTo(s); siteFacts(s); }, "s" + (i + 1)));
       applyLayers();

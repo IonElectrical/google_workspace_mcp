@@ -1,0 +1,59 @@
+{
+  "_note": "Partner tour script for the Wilton viewer. Every number here comes from docs/SITE_LAYOUTS.md, docs/MILL_ROOF.md or SOURCE_LOG.md; estimates are said to be estimates. No pricing, no customer account details. Edit the narration freely; anchors are resolved by export_web.py.",
+  "stops": [
+    {
+      "id": "welcome",
+      "title": "Downtown Wilton",
+      "anchor": "overview",
+      "narration": "Welcome to downtown Wilton, New Hampshire. Everything you see is built from the 2019 U.S. Geological Survey lidar flight. The ground is a one-meter elevation model, and the roof shapes come from the same laser points. This is Ion Electrical job 1976, the Town of Wilton's public Level 2 charging pilot under the state's Recharge the Adventure program. We'll visit four candidate sites. Anything we measured comes from a named dataset, and anything we calculated is called an estimate. Flood zones, parcel lines and underground utilities are not loaded yet, and every dig starts with a Dig Safe call."
+    },
+    {
+      "id": "river",
+      "title": "The river corridor",
+      "anchor": "confluence",
+      "narration": "This is where Stony Brook joins the Souhegan River in the middle of the village. Both names come from the USGS National Hydrography Dataset. The Souhegan is a state-designated river, and all four charger layouts sit within 250 feet of mapped water, so a shoreland permit check is on our list. The flood map in effect is dated September 25, 2009. We haven't loaded the FEMA flood layer yet, so this model shows no flood elevations."
+    },
+    {
+      "id": "s1",
+      "title": "Site 1 · Police lot",
+      "anchor": "site:S1_PoliceLot",
+      "narration": "Site one is the police station lot at 7 Burns Hill Road, the Town's likely first choice. The layout puts two dual-port pedestals toward the back of the lot, away from the riverwalk and the memorial benches out front. The van-accessible stall and aisle measure 1.2 percent slope, inside the 2.08 percent ADA limit. The red zone is the police exit route. It's assumed from our site notes until the department confirms it. The yellow shading covers the whole paved lot, because the 40 spaces deeded to the Wilton Falls building have never been marked out. Trench runs are estimated at about 41 and 29 feet from a placeholder power point, until we locate the pad-mount transformer. One caution: the Environmental Protection Agency reports a sodium cyanide vault under a concrete cap next to the police department. Its exact location isn't mapped, so we find it before any trenching here."
+    },
+    {
+      "id": "s2",
+      "title": "Site 2 · Main St lot",
+      "anchor": "site:S2_MainStLot",
+      "narration": "Site two is the municipal lot off Main Street near Town Hall. Two things to know. First, the location. The paved area in the data sits on the southwest side of the Main Street and Burns Hill Road junction, not the southeast corner in our notes, so we confirm the lot on site. Second, it isn't flat where the stalls fit. The van-accessible aisle measures about 3.1 percent against the 2.08 percent limit, so this site would need regrading or a different row. This corner is also the Town's snow storage area. The white rings mark 150 and 250 feet toward Stony Brook, where our notes flag a possible flood zone."
+    },
+    {
+      "id": "s3",
+      "title": "Site 3 · Library street-side",
+      "anchor": "site:S3_Library",
+      "narration": "Site three is street-side parking at the Wilton Public and Gregg Free Library. In the map data this street is Forest Road. The stalls run parallel to the curb, which we traced from the lidar's pavement return. This is the flattest site. No stall or aisle is steeper than one percent. The catch is the grade up to the building. The library sits about 13 feet above the curb, so the estimated power run from the building drops about 13 feet over roughly 70 feet. That points to a bore or a stepped trench. Stony Brook's mapped edge is about 57 feet from the stalls, and plows are a real risk at the curb line."
+    },
+    {
+      "id": "s4",
+      "title": "Site 4 · Pidcock mill",
+      "anchor": "site:S4_Mill",
+      "narration": "Site four is the Pidcock mill at One Riverside Way. The layout sits beside the north building on nearly flat pavement, 0.3 percent at the van-accessible stall. The mill's meter points to three-phase service, which Eversource still has to confirm, and an Eversource pad-mount transformer sits on site. Its rating plate is unreadable, so Eversource will confirm the size. Their label asks for 10 feet of clear space at the transformer door and 4 feet on the other sides, and every layout keeps that zone clear. If three-phase service is confirmed, this is the natural place for DC fast charging later."
+    },
+    {
+      "id": "roof",
+      "title": "Mill roofs",
+      "anchor": "roof",
+      "narration": "We've landed on the mill roof. The two buildings cover 46,782 square feet of footprint, measured from the lidar. The 93,000 to 100,000 square foot figures in listings are about twice that, which fits floor area over two levels rather than roof. After a four-foot fire setback, about 29,500 square feet of roof is usable. As a calculated estimate, that could carry roughly 413 kilowatts of solar, DC. The roof structure and age have not been checked yet."
+    },
+    {
+      "id": "bridge",
+      "title": "Bridge corridor and dike",
+      "anchor": "bridge",
+      "narration": "The yellow line is the corridor for the planned pedestrian bridge over the Souhegan, from the mill side to Howard Street. As a straight line it's about 318 feet, with about 142 feet over water. The Plan A and Plan B landings are still to be fixed. The orange line traces a raised bank around the pond beside the mill. Its crest is about 3.7 feet above the pond surface. That trace is our estimate from the lidar, and we still need to confirm it's the Waterworks dike."
+    },
+    {
+      "id": "wrap",
+      "title": "What's next",
+      "anchor": "overview",
+      "narration": "That's the tour. Still open are the transformer sizes and service details at each site, wheel-measured trench lengths, the flood map and parcel lines, the deeded-space plan at the police lot, and the location of the cyanide vault. The full list travels with this model. And whatever the model shows, every dig starts with a Dig Safe call. Thanks for touring Wilton with us."
+    }
+  ]
+}

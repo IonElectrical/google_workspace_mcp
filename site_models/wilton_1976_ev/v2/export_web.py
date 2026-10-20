@@ -130,6 +130,96 @@ def ring_area_sqft(ring):
     return round(shapely.Polygon(ring).area / FT**2)
 
 
+def build_tour(W, L, Wt, sites, ground, det):
+    """Resolve web/tour.json anchors to model coordinates: target (look-at), camera, and where
+    the roadster parks. Sites reuse their aerial camera and eye-level spot; the river stop is the
+    measured Stony Brook / Souhegan confluence (closest NHD vertices), the roof stop the largest
+    lidar roof plane, the bridge stop the middle of the estimated corridor."""
+    spec = json.load(open(os.path.join(HERE, "web", "tour.json")))
+
+    def gz(x, y):
+        return round(float(ground.z(x, y)[0]), 2)
+
+    def offset(t, bearing_deg, dist, up):
+        b = math.radians(bearing_deg)
+        x, y = t[0] + dist * math.sin(b), t[1] + dist * math.cos(b)
+        return [round(x, 2), round(y, 2), round(gz(x, y) + up, 2)]
+
+    by_key = {s["key"]: s for s in sites}
+    cx, cy = (det[0] + det[2]) / 2, (det[1] + det[3]) / 2
+    anchors = {
+        "overview": {
+            "target": [cx, cy, gz(cx, cy)],
+            "camera": [cx - 420, cy - 620, gz(cx, cy) + 520],
+        }
+    }
+    anchors["overview"]["park"] = offset(anchors["overview"]["target"], 210, 60, 0)
+
+    def lines(name):
+        return [
+            np.asarray(ln)[:, :2]
+            for f in Wt["flowlines"]
+            if f["name"] == name
+            for ln in f["geom"]["coordinates"]
+        ]
+
+    stony, souhegan = lines("Stony Brook"), lines("Souhegan River")
+    if stony and souhegan:
+        sp, gp = np.concatenate(stony), np.concatenate(souhegan)
+        d = np.linalg.norm(sp[:, None, :] - gp[None, :, :], axis=2)
+        i, j = np.unravel_index(np.argmin(d), d.shape)
+        c = (sp[i] + gp[j]) / 2
+        t = [round(float(c[0]), 2), round(float(c[1]), 2), gz(*c)]
+        anchors["confluence"] = {
+            "target": t,
+            "camera": offset(t, 215, 170, 90),
+            "park": offset(t, 215, 40, 0),
+        }
+    patches = json.load(open(os.path.join(W, "mill_roof_patches.json")))
+    big = max(patches, key=lambda p: shapely.Polygon(p["ring"]).area)
+    r = np.asarray(big["ring"])
+    a_, b_, c_ = big["abc"]
+    rx, ry = r.mean(0)
+    rz = round(float(a_ * rx + b_ * ry + c_ + 0.2), 2)
+    rt = [round(float(rx), 2), round(float(ry), 2), rz]
+    cam = offset(rt, 135, 140, 0)
+    cam[2] = round(rz + 70, 2)
+    anchors["roof"] = {"target": rt, "camera": cam, "park": rt}
+    bc = np.asarray(L["sites"]["S4_Mill"]["bridge_corridor"]["points"])
+    mid = bc[len(bc) // 2]
+    bt = [round(float(mid[0]), 2), round(float(mid[1]), 2), gz(mid[0], mid[1])]
+    anchors["bridge"] = {
+        "target": bt,
+        "camera": offset(bt, 120, 170, 75),
+        "park": [
+            round(float(bc[0][0]), 2),
+            round(float(bc[0][1]), 2),
+            gz(bc[0][0], bc[0][1]),
+        ],
+    }
+
+    stops = []
+    for s in spec["stops"]:
+        a = s["anchor"]
+        if a.startswith("site:"):
+            site = by_key[a.split(":", 1)[1]]
+            px = site["center"][0] + 0.5 * (site["eye"][0] - site["center"][0])
+            py = site["center"][1] + 0.5 * (site["eye"][1] - site["center"][1])
+            res = {
+                "target": site["center"],
+                "camera": site["aerial"],
+                "park": [round(px, 2), round(py, 2), gz(px, py)],
+            }
+        elif a in anchors:
+            res = anchors[a]
+        else:
+            raise KeyError(f"tour.json: unknown anchor {a}")
+        stops.append(
+            {"id": s["id"], "title": s["title"], "narration": s["narration"], **res}
+        )
+    return stops
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--work", required=True)
@@ -602,6 +692,7 @@ def main():
         "claims": MR.get("claims"),
     }
     D["labels"] = labels
+    D["tour"] = build_tour(W, L, Wt, sites, ground, det)
 
     tpl = open(os.path.join(HERE, "web", "viewer_template.html")).read()
     html = tpl.replace(

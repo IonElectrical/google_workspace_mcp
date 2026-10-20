@@ -1,0 +1,5 @@
+id,type,tag,lat,lon,easting,northing,source,accuracy_ft,notes
+T1,padmount,,,,,,CompanyCam photo #,15,Site 1 pad-mount - kVA / voltage / phase from nameplate
+P5,pole,5,,,,,CompanyCam photo #,15,Mill - pole tag 5
+WT3,pole,Wilton Telco 3,,,,,CompanyCam photo #,15,Mill - pole tag Wilton Telco 3
+CP1,control,,,,,,phone GPS + photo,15,e.g. NE corner of police station at ground

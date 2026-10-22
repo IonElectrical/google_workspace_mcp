@@ -45,7 +45,7 @@ The same offset is stored in the file's scene properties.
 
 ## Headline findings for today's walk
 
-1. **S1 Police lot: reported sodium-cyanide vault next door.**
+1. **S1 Police lot: reported sodium-cyanide vault next door.** Update from the Town, 10/22: the contaminated Abbott Trust lot (J-104-2) is a separate parcel from the police station (J-104-1). Visually it is the concrete "pad" in front of the PD by the Burns Hill Rd bridge, on the opposite side of the building from the proposed chargers. The S1 layout is about 333 ft from the bridge crossing and its trench routes stay at least 309 ft from it (measured in the model). The Town sent the PASI report, which is saved in the Wilton Drive folder and not read yet.
    - EPA (Feb 2023, Abbott Trust Lot J-104-2) describes a vault under a concrete cap "adjacent to the Wilton Police Department".
    - EPA warns a reassessment may be needed if construction disturbs it.
    - **Its exact location is not mapped anywhere we could reach.** Locate it before any trench at S1.

@@ -20,7 +20,7 @@ Inside the police lot; the flattest valid row, preferring the back (away from th
 | Trench to pedestal 2 | 29.1 ft along ground (29.0 ft plan) | CALCULATED ESTIMATE from placeholder |
 | deed_area | {"area_sqft": 24811, "source": "Overture/OSM parking polygon minus lidar-registered building footprint", "label": "40 SPACES DEEDED TO WILTON FALLS BLDG - DEED UNDELINEATED (whole paved lot shown)"} | see notes |
 | police_exit | {"length_ft": 108.7, "zone": [[132.519, 207.236], [130.042, 186.537], [98.799, 192.185], [110.306, 234.889]], "zone_area_sqft": 10373, "note": "ASSUMED from the brief (front = riverwalk side NE, exit = road behind = SW to Burns Hill Rd). Confirm with WPD."} | see notes |
-| hazard | {"xy": [126.78, 225.06], "text": "REPORTED: sodium cyanide vault under a concrete cap 'adjacent to the Wilton Police Department' (Abbott Trust Lot J-104-2, EPA 2023). Exact location NOT mapped - locate before any trenching."} | see notes |
+| hazard | {"xy": [126.78, 225.06], "text": "REPORTED: sodium cyanide vault under a concrete cap on the Abbott Trust lot (J-104-2, EPA 2023). Town Administrator, 10/22: the lot is separate from the PD parcel (J-104-1) and is the concrete pad in front of the PD by the bridge. Exact edges pending the PASI report - confirm before any trenching."} | see notes |
 
 | Stall / aisle | Slope % | Relief m |
 |---|---|---|

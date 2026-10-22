@@ -998,7 +998,7 @@ def main():
     hx, hy = hz["xy"]
     label(
         "S1 HAZARD",
-        "REPORTED: sodium cyanide vault under concrete cap\nadjacent to Police Dept (EPA 2023, Lot J-104-2).\nLOCATION NOT MAPPED - locate before trenching",
+        "REPORTED: sodium cyanide vault under concrete cap, Abbott Trust lot J-104-2 (EPA 2023).\nTown 10/22: the concrete pad in front of the PD by the bridge.\nEXACT EDGES PENDING (PASI report) - confirm before trenching",
         C["s1"],
         (hx + 12.0, hy + 12.0, float(ground.z(hx, hy)[0]) + 24.0),
         1.4,

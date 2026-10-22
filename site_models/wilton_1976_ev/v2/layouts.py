@@ -609,7 +609,7 @@ def main():
     }
     out["sites"]["S1_PoliceLot"]["hazard"] = {
         "xy": [round(pb.centroid.x, 2), round(pb.centroid.y, 2)],
-        "text": "REPORTED: sodium cyanide vault under a concrete cap 'adjacent to the Wilton Police Department' (Abbott Trust Lot J-104-2, EPA 2023). Exact location NOT mapped - locate before any trenching.",
+        "text": "REPORTED: sodium cyanide vault under a concrete cap on the Abbott Trust lot (J-104-2, EPA 2023). Town Administrator, 10/22: the lot is separate from the PD parcel (J-104-1) and is the concrete pad in front of the PD by the bridge. Exact edges pending the PASI report - confirm before any trenching.",
     }
     # S2: distance bands toward Stony Brook (150 / 250 ft from the given point) and brook offsets
     sb = shapely.union_all([g for n, g in flow if n == "Stony Brook"])

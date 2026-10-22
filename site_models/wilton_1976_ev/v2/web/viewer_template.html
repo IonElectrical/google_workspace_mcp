@@ -655,10 +655,10 @@ ul.notes { margin: 0; padding-left: 18px; display: flex; flex-direction: column;
         } else if (ov.k === "hazard") {
           const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.18, 7, 8), mat.hazard);
           pole.position.copy(V(ov.at[0], ov.at[1], ov.at[2] + 3.5));
-          pole.userData.info = { title: "Reported cyanide vault (location not mapped)", rows: [], note: ov.label, tag: "w" };
+          pole.userData.info = { title: "Abbott Trust lot J-104-2 (reported cyanide vault)", rows: [["Town, 10/22", "concrete pad in front of the PD by the bridge"], ["Parcel", "separate from the PD lot (J-104-1)"]], note: ov.label, tag: "w" };
           pickables.push(pole);
           layer("overlays").add(pole);
-          addLabel("⚠ Reported cyanide vault next to the Police Dept (EPA 2023) · location NOT mapped · click the red post", ov.at[0], ov.at[1], ov.at[2] + 14, "warn", "overlays", 600);
+          addLabel("⚠ Abbott Trust lot (cyanide vault, EPA 2023): per the Town, the concrete pad in front of the PD by the bridge · exact edges pending · click the red post", ov.at[0], ov.at[1], ov.at[2] + 14, "warn", "overlays", 600);
         } else if (ov.k === "ring") {
           linesFromPolylines([ov.line], 0xffffff, "overlays");
           addLabel(ov.label, ov.at[0], ov.at[1], ov.at[2] + 1.5, "note", "overlays", 500);
@@ -1258,7 +1258,7 @@ ul.notes { margin: 0; padding-left: 18px; display: flex; flex-direction: column;
   function siteFacts(s) {
     const m = s.measured, ada = s.search.ada_slope_pct, ok = ada <= 2.08;
     let h = `<span class="eyebrow">Site facts</span><h1>${esc(s.title)}</h1><p class="small muted">${esc(s.addr)}</p><p class="small">${esc(s.rationale)}</p>`;
-    if (s.key === "S1_PoliceLot") h += `<div class="alert"><b>Reported sodium-cyanide vault</b> under a concrete cap next to the Police Department (EPA 2023, Abbott Trust Lot J-104-2). Not mapped; locate before trenching.</div>`;
+    if (s.key === "S1_PoliceLot") h += `<div class="alert"><b>Reported sodium-cyanide vault</b> under a concrete cap on the Abbott Trust lot (J-104-2, EPA 2023). Per the Town, it is the concrete pad in front of the PD by the bridge, opposite the proposed chargers. Exact edges pending the state's assessment report; confirm before trenching.</div>`;
     if (s.key === "S2_MainStLot") h += `<div class="alert"><b>Location to confirm.</b> The brief says SE corner of Main St / Burns Hill Rd; the paving in the data is SW of it. Flood rings are distances only (FEMA layer not loaded).</div>`;
     if (s.key === "S3_Library") h += `<div class="alert"><b>Street name to confirm.</b> OSM calls this Forest Rd; the brief says Main St. The library sits about 13 ft above the curb.</div>`;
     h += `<div class="tbl"><table><thead><tr><th>Measure</th><th style="text-align:right">Value</th><th>Basis</th></tr></thead><tbody>

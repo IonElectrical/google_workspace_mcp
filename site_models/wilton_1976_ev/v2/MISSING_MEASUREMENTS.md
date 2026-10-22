@@ -20,10 +20,10 @@ Nothing on this list was guessed in the model. Each item is shown as a placehold
 | # | Missing | Site | Who / how to get it | How to load it |
 |---|---|---|---|---|
 | 7 | Location of the **40 deeded spaces** (Wilton Falls Bldg, 6 Burns Hill Rd). The model shades the whole paved lot as "deed undelineated", 24,811 sq ft. | S1 | Deed / plan at the Hillsborough County Registry; Nick Germain | Digitise as GeoJSON, then `import_gis_layer.py` |
-| 8 | **Cyanide vault** location and cap extent (Abbott Trust Lot J-104-2) | S1 | Town (EPA 2023 assessment report and its figures); NHDES | `import_field_points.py` (type `other`) |
+| 8 | **Cyanide vault** location and cap extent (Abbott Trust Lot J-104-2). Town, 10/22: the lot is separate from the PD parcel (J-104-1); visually it is the concrete "pad" in front of the PD by the bridge. The PASI report the Town sent is saved in the Wilton Drive folder; its site figure has not been read yet. | S1 | PASI report figures (`0122_EJ Abbott_PASI Report_Final_Combined.pdf`); NHDES | `import_field_points.py` (type `other`) |
 | 9 | Police exit route and the keep-clear width the department needs. The model's zone is **assumed** from the brief. | S1 | Police chief | Move the overlay |
-| 10 | Parcel lines: 21 Mill St, the **13-ft strip** and its owner, J-104-1/-2, J-105, J-61 (Proctor lot), Waterworks lot | S1, S2, S4 | NRPC MapGeo / NH Parcel Mosaic (see README §5); Assessor 603-654-3299; deeds | `import_gis_layer.py` |
-| 11 | S2 lot boundary. The brief says the SE corner of Main / Burns Hill; the data shows paving **SW** of it, and Town Hall (USGS) is 1,284 ft from the brief point. | S2 | Jennifer / Town; site walk | Move the S2 layout |
+| 10 | Parcel lines: 21 Mill St, the **13-ft strip** and its owner, Waterworks lot, J-104-2, J-105. Lot numbers from the Town, 10/22: mill (1 Riverside Way) = J-113 (parking, pond, hydro grounds, up to Rte 101), J-110 (mill block buildings, front and side lots), L-66 (warehouse and rear lot); Police Station = J-104-1; Riverwalk Park = J-102; Main Street lot = J-61. The Town's pins are Google Maps short links that can't be opened from the cloud session. Only L-66 came with coordinates (42.841697, -71.738136), and that point is 1.4 m from the mill's south building in the model. | S1, S2, S4 | Open the Town's links and copy each pin's coordinates; NRPC MapGeo / NH Parcel Mosaic (README §5) for the lines | `import_gis_layer.py`; `import_field_points.py` for the pins |
+| 11 | S2 lot boundary. The Town confirms the Main Street lot is J-61 and sent a map pin (not yet opened). The brief says the SE corner of Main / Burns Hill; the data shows paving **SW** of it, and Town Hall (USGS) is 1,284 ft from the brief point. | S2 | The Town's J-61 pin; site walk | Move the S2 layout |
 | 12 | S3 street name (OSM: Forest Rd; brief: Main St) and the curb line (from lidar intensity; ±1.5 ft) | S3 | Site walk; Town | Field points on the curb |
 | 13 | Snow-storage areas and plow routes at each lot; S2 "snow-storage corner" | all | DPW / plow contractor | Digitise, then `import_gis_layer.py` |
 | 14 | Riverwalk future phases and bench / landing positions; pedestrian bridge **Plan A / Plan B** landings | S1, S4 | Economic Development team; NRPC; the 2018/2019 GPI design plans | Field points, or digitise |
@@ -55,7 +55,8 @@ Nothing on this list was guessed in the model. Each item is shown as a placehold
 | # | Missing | Who |
 |---|---|---|
 | 27 | RANH 5-year operating commitment (not on the NHDES page); the minimum of 2 ports per project (reported only locally) | RANH RFP / NHDES |
-| 28 | Which sites the Town wants in the first application (the $100k cap is 10 ports at $10k each) | Select Board / Jennifer |
+| 28 | Which sites the Town wants in the first application (the $100k cap is 10 ports at $10k each). Town, 10/22: give the Select Board ballpark figures first. | Select Board / Jennifer |
+| 38 | Whether the install goes to competitive bid. Town, 10/22: still open; the Select Board has required bids before and has also waived the rules. | Town Administrator / Select Board |
 
 ## Added from brief v3 (CompanyCam findings, 10/20 afternoon)
 

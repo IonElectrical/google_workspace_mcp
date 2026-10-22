@@ -10,7 +10,7 @@ Nothing on this list was guessed in the model. Each item shows as a placeholder,
 | 2 | **Horizontal run** from each room to its riser | all | Wheel or tape (photo list item 1) | Write into `ROUTE_LENGTHS.md` as MEASURED |
 | 3 | **Floor levels** (ground-floor slab vs grade; bridge deck / room #204 floor). Risers use slab = grade, an assumption. For #204, only an upper bound (≤ 14.2 ft) is possible. | all | Tape floor to floor at each riser; airport drawings | Edit the riser in `ROUTE_LENGTHS.md` |
 | 4 | **Roof penetration** point per circuit, so the roof run | all | Photo list item 3d | `import_field_points.py`, type `roof_penetration` |
-| 5 | **Unit tags.** AHU-5 and RTU-5 are lidar candidates. RTU-1 to RTU-4 can't be told apart (B1, B2). The **RTU-5 nameplate is unread**. | all | Nameplate close-up + 20 ft wide shot | Rename the box in Blender; rerun `hvac_routes.py` with the tag order |
+| 5 | **Unit tags.** AHU-5 is a lidar candidate. RTU-5's candidate is now photo-matched (IMG_5256/5257 point at it, `docs/FIELD_PHOTOS.md`), but the **nameplate is unread**. RTU-1 to RTU-4 can't be told apart (B1, B2); the York unit in IMG_5255 is B1 or B2. | all | Nameplate close-up + 20 ft wide shot (from the roof: none is legible from the curb) | Rename the box in Blender; rerun `hvac_routes.py` with the tag order |
 | 6 | **Two RTUs not seen in the lidar.** The bid package lists 5 RTUs on bridge roofs; the 2019 lidar shows 3 unit-sized objects on the deck roof. The others may be under 3 ft tall, on a wing roof, in a dropout on the black EPDM (61 % cell cover), or installed after 2019. | RTU-1 to RTU-5 | Site walk | As item 5 |
 | 7 | Roof hatches and ladders | low roof, bridge | Photo list item 3e | `import_field_points.py`, type `roof_hatch` |
 
@@ -21,6 +21,7 @@ Nothing on this list was guessed in the model. Each item shows as a placeholder,
 | 8 | Service size, voltage and phase at SWBD E, M1, M2, M3 | Panel nameplates and schedules (photo list 3c) | `UTILITY_ITEMS.csv`, then `import_field_points.py` |
 | 9 | Unit disconnect ratings and locations | Photo list 3b | as above |
 | 10 | Existing conduit routes (reuse or new) | Site walk; as-builts through AmeriTech / the airport | Digitise, then `import_gis_layer.py` |
+| 10a | **Lightning protection bonding.** IMG_5256 shows air terminals on the bridge roof edge next to RTU-5. The RFP text never mentions lightning protection. Do the new units have to be bonded to the LPS (NFPA 780), and by whom? | RFI through AmeriTech | Scope note; no model change |
 
 ## Crane and staging
 

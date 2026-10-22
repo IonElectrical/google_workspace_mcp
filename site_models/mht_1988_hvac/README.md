@@ -167,6 +167,12 @@ All tools read the CRS from the `.prj` file (NH State Plane ft, UTM 19N, lon/lat
 
 Only tape, wheel or registered Polycam capture gets route lengths to the ±1 ft an estimate needs. This lidar model is the frame to register them into.
 
+**How roofs are drawn.** Each roof level and each roof object is a flat block traced from a 0.5 m lidar roof surface (per-cell max, 3 × 3 median, levels snapped within ±0.25 m, outlines simplified 0.6 m with shared edges kept), extruded to the ground. The blocks are for display only. Every number in the panels and docs comes from the raw lidar points in `hvac_routes.py`, and none changed when the display switched from the 1 m grid to blocks. Thin parapets (under ~1 m) are not drawn.
+
+**Google 3D Tiles would not make it more accurate.** Google's photorealistic mesh is a photogrammetry surface, typically off by a metre or more and smoothed at roof edges. It looks better but measures worse than the 15 pts/m² lidar this model is built on, and its terms don't allow keeping it. The path to better numbers is field capture (tape/wheel, Polycam with control points) and the room locations (drawings). The path to better looks is an orthophoto drape (`drape_orthophoto.py`, GRANIT 6-inch) and, if wanted, Google tiles in a private `…_google.blend` copy (step 7).
+
+**Field photos.** The pre-bid walk photos are tied in by EXIF position and heading: see `docs/FIELD_PHOTOS.md` and the purple posts and sight lines in the viewer.
+
 ## Per-job config (first reuse of the Wilton pipeline)
 
 The Wilton #1976 folder is unchanged. Its job-specific parts now live in `job_config.py`, and the scripts in `pipeline/` read it (`--config PATH`, or the `JOB_CONFIG` environment variable). For the next job, copy `pipeline/` and `tools/`, write a new `job_config.py`, and add an analysis module if the purpose differs.

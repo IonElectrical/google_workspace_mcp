@@ -337,6 +337,7 @@ ul.notes { margin: 0; padding-left: 18px; display: flex; flex-direction: column;
     unitAlt: new THREE.MeshLambertMaterial({ color: 0x8d949b, transparent: true, opacity: 0.75 }),
     craneMark: new THREE.MeshBasicMaterial({ color: 0xff9d1a }),
     placeholder: new THREE.MeshBasicMaterial({ color: 0xffd21a }),
+    photo: new THREE.MeshBasicMaterial({ color: 0xa855f7 }),
     route: new THREE.MeshBasicMaterial({ color: 0xf2301a }),
     riser: new THREE.MeshBasicMaterial({ color: 0xff8a1f }),
     edge: new THREE.MeshBasicMaterial({ color: 0xffffff }),
@@ -470,9 +471,18 @@ ul.notes { margin: 0; padding-left: 18px; display: flex; flex-direction: column;
   function buildBuildings() {
     const B = D.bld, p = dec(B.p, Float32Array), idx = dec(B.i, Uint16Array), kind = dec(B.k, Uint8Array), owner = dec(B.o, Uint16Array);
     const nt = idx.length / 3, pos = new Float32Array(nt * 9), col = new Float32Array(nt * 9);
-    const roofC = new THREE.Color(0x5f5b57), wallC = new THREE.Color(0xd9d2c4);
+    // flat roof: light membrane grey, a touch lighter per ~1.5 m of height so the levels read;
+    // steep roof faces (unit sides, steps between levels) darker; walls warm
+    const flatLo = new THREE.Color(0x7d7b77), flatHi = new THREE.Color(0x9b9994), steepC = new THREE.Color(0x55524e), wallC = new THREE.Color(0xd9d2c4), c = new THREE.Color();
     for (let t = 0; t < nt; t++) {
-      const c = kind[t] ? wallC : roofC;
+      if (kind[t]) c.copy(wallC);
+      else {
+        const a = (idx[t * 3] + B.vo[owner[t]]) * 3, b = (idx[t * 3 + 1] + B.vo[owner[t]]) * 3, e = (idx[t * 3 + 2] + B.vo[owner[t]]) * 3;
+        const ux = p[b] - p[a], uy = p[b + 1] - p[a + 1], uz = p[b + 2] - p[a + 2], vx = p[e] - p[a], vy = p[e + 1] - p[a + 1], vz = p[e + 2] - p[a + 2];
+        const nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx, nzr = Math.abs(nz) / (Math.hypot(nx, ny, nz) || 1);
+        if (nzr < 0.8) c.copy(steepC);
+        else { const zm = (p[a + 2] + p[b + 2] + p[e + 2]) / 3; c.copy(flatLo).lerp(flatHi, 0.35 + 0.65 * (((zm / 1.5) % 2 + 2) % 2 > 1 ? 1 : 0.55)); }
+      }
       for (let v = 0; v < 3; v++) {
         const s = (idx[t * 3 + v] + B.vo[owner[t]]) * 3, d = (t * 3 + v) * 3;
         pos[d] = p[s]; pos[d + 1] = p[s + 2]; pos[d + 2] = -p[s + 1];

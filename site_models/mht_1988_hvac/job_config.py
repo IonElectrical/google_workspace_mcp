@@ -283,6 +283,59 @@ REDACT = {
     "no_pricing": True,
 }
 
+# --------------------------------------------------------------------------- field photos
+# Pre-bid walk photos (iPhone, Drive folder "1_zLdl...", 82 HEIC, 2026-10-22 12:40-12:46).
+# Only the roof-equipment shots are listed; position and heading are the photo's own EXIF
+# (GPS horizontal accuracy in metres, heading true). The photo files are NOT in the repo
+# (security-sensitive site); only this metadata is.
+FIELD_PHOTOS = {
+    "source": "Pre-bid walk photos, 2026-10-22 (82 iPhone HEIC in the job Drive folder)",
+    "match_max_deg": 12,  # compass + GPS error: a unit within this of the heading is a match
+    "summary": "78 of the 82 photos are interior walk-through shots (baggage claim, the glass "
+    "connector, ticketing hall) and the curb/garage approach. They show ceilings and finishes "
+    "but no electrical equipment, panels or nameplates. Four show rooftop units from the curb.",
+    "photos": [
+        {
+            "name": "IMG_5254",
+            "time": "2026-10-22 12:46:01",
+            "lat": 42.927728,
+            "lon": -71.438644,
+            "heading": 331.8,
+            "hacc_m": 16.5,
+            "subject": "Packaged RTU on the bridge roof, garage end (wide)",
+        },
+        {
+            "name": "IMG_5255",
+            "time": "2026-10-22 12:46:06",
+            "lat": 42.927719,
+            "lon": -71.438636,
+            "heading": 328.8,
+            "hacc_m": 8.2,
+            "subject": "YORK packaged RTU: unit-mounted disconnect with conduit down the "
+            "cabinet side, gas piping at the base, two condenser coil sections",
+        },
+        {
+            "name": "IMG_5256",
+            "time": "2026-10-22 12:46:29",
+            "lat": 42.927733,
+            "lon": -71.438606,
+            "heading": 55.8,
+            "hacc_m": 13.3,
+            "subject": "Unit above the bridge parapet at the terminal end; lightning-"
+            "protection air terminals on the roof edge either side of it",
+        },
+        {
+            "name": "IMG_5257",
+            "time": "2026-10-22 12:46:31",
+            "lat": 42.927733,
+            "lon": -71.438614,
+            "heading": 56.4,
+            "hacc_m": 12.6,
+            "subject": "Same unit, wider: sits behind the parapet above the curb canopy",
+        },
+    ],
+}
+
 # --------------------------------------------------------------------------- viewer
 VIEWER = {
     "page_title": "MHT Terminal HVAC Model",

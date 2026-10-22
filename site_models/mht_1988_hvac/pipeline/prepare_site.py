@@ -299,17 +299,177 @@ def lidar_buildings(footprints, p, cls, nret, ground):
     return is_bldg, is_veg, hag
 
 
-def roof_mesh(poly, pts_b, base_z):
-    """Footprint triangulated with a 1 m interior grid; z from a robust local max of roof points."""
-    from scipy.spatial import cKDTree
+ROOF_CELL = 0.5  # m, roof surface raster
+ROOF_SNAP = 0.25  # m, vertices this close to a roof level are set to it
+ROOF_LEVEL_MIN_M2 = 40.0  # a roof level must cover at least this much area
+ROOF_EDGE_IN = 1.0  # m, edge vertices read the roof this far inside the outline
 
+
+def roof_grid(poly, pts_b):
+    """0.5 m lidar roof surface over the footprint: per-cell max, 3x3 median, gaps and the
+    strip outside the lidar edge filled from the nearest roof cell, then near-flat areas
+    snapped to their roof level (the dominant heights). Returns (g, x0, y0, snapped)."""
+    from scipy import ndimage
+
+    minx, miny, maxx, maxy = poly.bounds
+    nx = int(np.ceil((maxx - minx) / ROOF_CELL)) + 3
+    ny = int(np.ceil((maxy - miny) / ROOF_CELL)) + 3
+    x0, y0 = minx - ROOF_CELL, miny - ROOF_CELL
+    ix = np.clip(((pts_b[:, 0] - x0) / ROOF_CELL).astype(int), 0, nx - 1)
+    iy = np.clip(((pts_b[:, 1] - y0) / ROOF_CELL).astype(int), 0, ny - 1)
+    g = np.full((ny, nx), -np.inf)
+    np.maximum.at(g, (iy, ix), pts_b[:, 2])
+    hole = ~np.isfinite(g)
+    _, (fi, fj) = ndimage.distance_transform_edt(hole, return_indices=True)
+    g = g[fi, fj]
+    g = ndimage.median_filter(g, size=3, mode="nearest")
+    # roof levels: histogram peaks of the filtered surface inside the footprint
+    cx = x0 + (np.arange(nx) + 0.5) * ROOF_CELL
+    cy = y0 + (np.arange(ny) + 0.5) * ROOF_CELL
+    gx, gy = np.meshgrid(cx, cy)
+    inside = shapely.contains_xy(poly, gx, gy) & ~hole
+    zs = g[inside]
+    snap = np.zeros(g.shape, bool)
+    if len(zs):
+        bins = np.arange(zs.min() - 0.05, zs.max() + 0.15, 0.1)
+        h, e = np.histogram(zs, bins)
+        cell_m2 = ROOF_CELL**2
+        levels = []
+        for k in np.argsort(-h):
+            if h[k] * cell_m2 < ROOF_LEVEL_MIN_M2:
+                break
+            zc = 0.5 * (e[k] + e[k + 1])
+            if all(abs(zc - lv) > 2 * ROOF_SNAP for lv in levels):
+                near = zs[np.abs(zs - zc) <= ROOF_SNAP]
+                levels.append(float(np.median(near)))
+        if levels:
+            lv = np.asarray(levels)
+            d = np.abs(g[..., None] - lv)
+            k = d.argmin(-1)
+            snap = d.min(-1) <= ROOF_SNAP
+            g = np.where(snap, lv[k], g)
+    return g, x0, y0, snap
+
+
+def roof_surface(poly, pts_b, xy):
+    """Roof z at xy, read from roof_grid()."""
+    g, x0, y0, _ = roof_grid(poly, pts_b)
+    ny, nx = g.shape
+    # vertices within ROOF_EDGE_IN of the outline read the roof 1 m in: a parapet is
+    # thinner than the 1 m mesh and would otherwise draw as a zigzag band (parapet
+    # heights are measured from the raw lidar in hvac_routes.py, not from this mesh)
+    xy = xy.copy()
+    inward = poly.buffer(-ROOF_EDGE_IN)
+    if not inward.is_empty and inward.geom_type == "Polygon":
+        out = np.nonzero(~shapely.contains_xy(inward, xy[:, 0], xy[:, 1]))[0]
+        ext = inward.exterior
+        for i in out:
+            q = ext.interpolate(ext.project(shapely.Point(xy[i])))
+            xy[i] = (q.x, q.y)
+    jx = np.clip(((xy[:, 0] - x0) / ROOF_CELL).astype(int), 0, nx - 1)
+    jy = np.clip(((xy[:, 1] - y0) / ROOF_CELL).astype(int), 0, ny - 1)
+    return g[jy, jx]
+
+
+BLOCK_STEP = 0.5  # m, heights off the roof levels are rounded to this
+BLOCK_TOL = 0.6  # m, outline simplification (shared edges kept by coverage_simplify)
+BLOCK_MIN_M2 = 2.0  # m^2, smaller pieces merge into their neighbour
+
+
+def roof_blocks(poly, pts_b, base_z, top):
+    """Display roof as flat blocks (LOD2-style): each roof level and each roof object is
+    a polygon traced from roof_grid() and extruded from base_z, so steps between levels
+    are vertical with straight edges instead of a staircased 1 m grid."""
+    import rasterio.features
+    from rasterio.transform import Affine
+    from scipy import ndimage
+
+    g, x0, y0, snap = roof_grid(poly, pts_b)
+    q = np.where(snap, g, np.round(g / BLOCK_STEP) * BLOCK_STEP)
+    q = np.clip(q, base_z + 2.2, top + 0.5)
+    # pieces under BLOCK_MIN_M2 take the value of their largest neighbour region
+    vals, inv = np.unique(np.round(q, 2), return_inverse=True)
+    lab = inv.reshape(q.shape)
+    min_cells = BLOCK_MIN_M2 / ROOF_CELL**2
+    for _ in range(3):
+        changed = False
+        for v in range(len(vals)):
+            comp, n = ndimage.label(lab == v)
+            if not n:
+                continue
+            sizes = ndimage.sum(np.ones_like(comp), comp, np.arange(1, n + 1))
+            for c in np.nonzero(sizes < min_cells)[0] + 1:
+                m = comp == c
+                ring = ndimage.binary_dilation(m) & ~m
+                if ring.any():
+                    lab[m] = np.bincount(lab[ring]).argmax()
+                    changed = True
+        if not changed:
+            break
+    tr = Affine(ROOF_CELL, 0, x0, 0, ROOF_CELL, y0)  # row 0 is the south edge
+    mask = np.ones(lab.shape, bool)
+    geoms, zs = [], []
+    for geom, v in rasterio.features.shapes(
+        lab.astype(np.int32), mask=mask, transform=tr
+    ):
+        geoms.append(shapely.geometry.shape(geom))
+        zs.append(float(vals[int(v)]))
+    if not geoms:
+        return []
+    geoms = shapely.coverage_simplify(np.asarray(geoms), BLOCK_TOL)
+    blocks = []
+    for gm, z in zip(geoms, zs):
+        gm = shapely.make_valid(gm).intersection(poly)
+        for part in getattr(gm, "geoms", [gm]):
+            if part.geom_type != "Polygon" or part.area < BLOCK_MIN_M2:
+                continue
+            blocks.append(
+                {
+                    "rings": [coords(part.exterior)]
+                    + [coords(r) for r in part.interiors],
+                    "z": round(z, 3),
+                }
+            )
+    return blocks
+
+
+def prism_mesh(blocks, base_z):
+    """Vertices, faces and per-face kind (0 roof, 1 wall) for blocks extruded to base_z."""
+    V, F, K = [], [], []
+    for b in blocks:
+        poly = shapely.Polygon(b["rings"][0], b["rings"][1:])
+        o = len(V)
+        rings = [np.asarray(r)[:-1] for r in b["rings"]]
+        top = np.concatenate(rings)
+        V += [(x, y, b["z"]) for x, y in top]
+        look = {(round(x, 4), round(y, 4)): o + i for i, (x, y) in enumerate(top)}
+        for t in shapely.constrained_delaunay_triangles(poly).geoms:
+            c = np.asarray(t.exterior.coords)[:3]
+            ids = [look.get((round(x, 4), round(y, 4))) for x, y in c]
+            if None not in ids:
+                F.append(ids)
+                K.append(0)
+        s = o
+        for r in rings:
+            n = len(r)
+            bot = len(V)
+            V += [(x, y, base_z - 0.3) for x, y in r]
+            for i in range(n):
+                j = (i + 1) % n
+                F += [[s + i, s + j, bot + j], [s + i, bot + j, bot + i]]
+                K += [1, 1]
+            s += n
+    return np.asarray(V, float), np.asarray(F, int), np.asarray(K, np.uint8)
+
+
+def roof_mesh(poly, pts_b, base_z):
+    """Footprint triangulated with a 1 m interior grid; z from the roof surface raster."""
     if len(pts_b) >= 8 and len(pts_b) >= 0.15 * poly.area:
         p90, p97 = np.percentile(pts_b[:, 2], [90, 97])
         top = float(min(p97, p90 + 1.0))
-        tree = cKDTree(pts_b[:, :2])
         lidar_ok = True
     else:
-        top, tree, lidar_ok = None, None, False
+        top, lidar_ok = None, False
     ring = np.asarray(shapely.segmentize(poly.exterior, 1.0).coords)[:-1]
     parts = [ring] + [
         np.asarray(shapely.segmentize(r, 1.0).coords)[:-1] for r in poly.interiors
@@ -332,22 +492,7 @@ def roof_mesh(poly, pts_b, base_z):
             faces.append([lookup[(round(x, 4), round(y, 4))] for x, y in c])
     z = None
     if lidar_ok:
-        inward = poly.buffer(-0.35)
-        sample = allp.copy()
-        if not inward.is_empty and inward.geom_type == "Polygon":
-            outside = ~shapely.contains_xy(inward, allp[:, 0], allp[:, 1])
-            for i in np.nonzero(outside)[0]:
-                q = inward.exterior.interpolate(
-                    inward.exterior.project(shapely.Point(allp[i]))
-                )
-                sample[i] = (q.x, q.y)
-        idx = tree.query_ball_point(sample, r=1.0)
-        z = np.array(
-            [np.percentile(pts_b[j, 2], 90) if len(j) >= 2 else np.nan for j in idx]
-        )
-        if np.isnan(z).any():
-            _, nn = tree.query(sample[np.isnan(z)])
-            z[np.isnan(z)] = pts_b[nn, 2]
+        z = roof_surface(poly, pts_b, allp)
         z = np.clip(z, base_z + 2.2, top + 0.5)
     return (
         allp,
@@ -704,6 +849,8 @@ def main():
         ring = np.asarray(shapely.segmentize(poly.exterior, 1.0).coords)[:-1]
         base_z = float(np.nanmin(dem.at(ring[:, 0], ring[:, 1])))
         allp, z, faces, n_ring, holes, top, ok = roof_mesh(poly, pin, base_z)
+        blocks = roof_blocks(poly, pin, base_z, top) if ok else []
+        bv, bf, bk = prism_mesh(blocks, base_z) if blocks else ([], [], [])
         buildings.append(
             {
                 "id": f.get("id"),
@@ -724,6 +871,13 @@ def main():
                 "roof_faces": faces,
                 "n_ring": n_ring,
                 "hole_rings": holes,
+                "blocks": blocks,
+                # display mesh of the blocks: vertices, triangles, kind (0 roof, 1 wall)
+                "block_mesh": {
+                    "v": np.round(bv, 3).tolist() if len(bv) else [],
+                    "f": np.asarray(bf).tolist(),
+                    "k": np.asarray(bk).tolist(),
+                },
             }
         )
     json.dump(

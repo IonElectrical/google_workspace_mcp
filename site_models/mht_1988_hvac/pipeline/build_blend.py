@@ -331,21 +331,27 @@ def build_buildings_detail(B, c, mats):
                 cyclic=True,
             )
             continue
-        xy = np.asarray(b["roof_xy"])
-        z = np.asarray(b["roof_z"])
-        verts = [tuple(p) for p in np.column_stack([xy, z])]
-        faces = [tuple(f) for f in b["roof_faces"]]
-        mi = [0] * len(faces)
-        start = 0
-        for k in [b["n_ring"]] + list(b["hole_rings"]):
-            ids = list(range(start, start + k))
-            bot0 = len(verts)
-            verts += [(xy[j, 0], xy[j, 1], b["base_z"] - 0.3) for j in ids]
-            for a in range(k):
-                cc = (a + 1) % k
-                faces.append((ids[a], ids[cc], bot0 + cc, bot0 + a))
-                mi.append(1)
-            start += k
+        bm_ = b.get("block_mesh") or {}
+        if bm_.get("f"):  # flat roof blocks traced from the lidar (prepare_site.py)
+            verts = [tuple(p) for p in bm_["v"]]
+            faces = [tuple(f) for f in bm_["f"]]
+            mi = list(bm_["k"])
+        else:  # lidar-grid roof (elevated structures such as the bridge)
+            xy = np.asarray(b["roof_xy"])
+            z = np.asarray(b["roof_z"])
+            verts = [tuple(p) for p in np.column_stack([xy, z])]
+            faces = [tuple(f) for f in b["roof_faces"]]
+            mi = [0] * len(faces)
+            start = 0
+            for k in [b["n_ring"]] + list(b["hole_rings"]):
+                ids = list(range(start, start + k))
+                bot0 = len(verts)
+                verts += [(xy[j, 0], xy[j, 1], b["base_z"] - 0.3) for j in ids]
+                for a in range(k):
+                    cc = (a + 1) % k
+                    faces.append((ids[a], ids[cc], bot0 + cc, bot0 + a))
+                    mi.append(1)
+                start += k
         ob = mesh_object(name, verts, faces, c, mats=[roof, wall], mat_index=mi)
         bm = bmesh.new()
         bm.from_mesh(ob.data)

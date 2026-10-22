@@ -140,6 +140,94 @@ def riser(u, floor_z, label):
     }
 
 
+def photo_matches(C, A, grade):
+    """Field photos aimed at roof units: camera position and heading from EXIF, matched to
+    the unit candidate nearest the heading. Returns one record per photo."""
+    P = getattr(C, "FIELD_PHOTOS", None)
+    if not P:
+        return []
+    units = A["units"] + A["ahu5_alternates"]
+    out = []
+    for ph in P["photos"]:
+        x, y = (float(v) for v in frame.local(ph["lat"], ph["lon"]))
+        hits = []
+        for u in units:
+            c = np.asarray(u["rect"]).mean(0)
+            brg = math.degrees(math.atan2(c[0] - x, c[1] - y)) % 360
+            off = (brg - ph["heading"] + 180) % 360 - 180
+            hits.append((abs(off), off, math.hypot(c[0] - x, c[1] - y) / FT, u))
+        hits.sort(key=lambda h: h[0])
+        within = [h for h in hits if h[0] <= P["match_max_deg"]]
+        out.append(
+            {
+                **ph,
+                "xy": [round(x, 2), round(y, 2)],
+                "z": grade + 1.5,
+                "hits": [
+                    {"tag": h[3]["tag"], "off_deg": round(h[1]), "dist_ft": round(h[2])}
+                    for h in within
+                ],
+                "best": within[0][3] if within else None,
+            }
+        )
+    return out
+
+
+def photo_features(ph):
+    """Camera post + sight line to the matched unit, for the viewer."""
+    u = ph["best"]
+    c = np.asarray(u["rect"]).mean(0)
+    top = u["roof_z_m"] + u["size_ft"][2] * FT
+    hits = "; ".join(
+        f"{h['tag']} {h['off_deg']:+d}° at {h['dist_ft']} ft" for h in ph["hits"]
+    )
+    return [
+        {
+            "t": "marker",
+            "at": [*ph["xy"], None],
+            "mat": "photo",
+            "size": 0.9,
+            "h": 1.6,
+            "info": info(
+                f"Photo {ph['name']}",
+                [
+                    ["Taken", ph["time"]],
+                    ["Heading (true)", f"{ph['heading']:.0f}°"],
+                    ["GPS accuracy", f"±{ph['hacc_m'] / FT:.0f} ft"],
+                    ["Units within the heading", hits],
+                ],
+                ph["subject"] + ". Position and heading are the phone's own (EXIF); "
+                "the match is by bearing, so it shows which candidate the photo points at, "
+                "not a measurement.",
+                "p",
+            ),
+            "label": f"photo {ph['name'][4:]}",
+            "la": [*ph["xy"], None],
+            "lk": "note",
+            "lmax": 260,
+        },
+        {
+            "t": "line",
+            "p": flat([[ph["xy"][0], ph["xy"][1], ph["z"]], [c[0], c[1], top]]),
+            "color": 0xA855F7,
+        },
+    ]
+
+
+def photo_alert(phs):
+    """One alert line for the photos that point at a site's units."""
+    parts = []
+    for ph in phs:
+        h = ph["hits"]
+        others = ", ".join(f"{x['tag']} {x['off_deg']:+d}°" for x in h[1:])
+        alt = f" ({others} also within the compass error)" if others else ""
+        parts.append(
+            f"{ph['name']}: {ph['subject']}. Points at {h[0]['tag']} "
+            f"({h[0]['off_deg']:+d}° off the heading, {h[0]['dist_ft']} ft away){alt}."
+        )
+    return "PHOTO-MATCHED (pre-bid walk, by bearing): " + " ".join(parts)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--work", required=True)
@@ -668,6 +756,23 @@ def main():
                 f1(r.get("left_for_horizontal_and_roof_ft")),
             ]
         )
+    # ---- field photos aimed at units: camera posts, sight lines, an alert per site
+    PH = photo_matches(C, A, grade)
+
+    def site_of(tag):
+        return (
+            "ahu5"
+            if tag.startswith("AHU-5")
+            else ("rtu5" if tag == "RTU-5" else "rtu1_4")
+        )
+
+    for s in sites:
+        phs = [p for p in PH if p["best"] and site_of(p["best"]["tag"]) == s["key"]]
+        if phs:
+            for p in phs:
+                s["features"] += photo_features(p)
+            s["alerts"].append(photo_alert(phs))
+
     uc = A["upper_roof_check"]
     overview = {
         "title": C.VIEWER["overview_title"],
@@ -699,6 +804,7 @@ def main():
         ["rgba(255,40,30,0.5)", "Airport Road closure area (estimate)"],
         ["#e04fc8", "Road centreline (OSM) · green: footway"],
         ["#c47ad6", "Building, height not measured"],
+        ["#a855f7", "Field photo position and sight line to the unit it shows"],
     ]
     lc = meta["checks"]["lidar_ground_vs_dem"]
     about = [
@@ -772,6 +878,8 @@ def main():
     write_route_md(A, C, meta, os.path.join(a.docs, "ROUTE_LENGTHS.md"))
     write_site_md(A, meta, os.path.join(a.docs, "docs", "SITE_LAYOUTS.md"))
     write_roof_md(A, os.path.join(a.docs, "docs", "ROOF_LEVELS.md"))
+    if PH:
+        write_photo_md(C, PH, os.path.join(a.docs, "docs", "FIELD_PHOTOS.md"))
     print(
         "wrote viewer_content.json, ROUTE_LENGTHS.md, docs/SITE_LAYOUTS.md, docs/ROOF_LEVELS.md"
     )
@@ -869,6 +977,52 @@ def write_site_md(A, meta, path):
         "Security: access routes, gates and restricted-area boundaries are not drawn or described in this model."
     )
     open(path, "w").write("\n".join(L) + "\n")
+
+
+def write_photo_md(C, PH, path):
+    P = C.FIELD_PHOTOS
+    L = [
+        "# Field photos tied to the model",
+        "",
+        f"Source: {P['source']}. {P['summary']}",
+        "",
+        "Each photo's position and compass heading come from its own EXIF. The unit candidate "
+        f"closest to the heading (within ±{P['match_max_deg']}°, the phone's compass and GPS error at "
+        "these distances) is the one the photo shows. This identifies WHICH candidate is in the "
+        "photo; it does not measure anything. Photo files are kept out of the repo.",
+        "",
+        "| Photo | Taken | Heading | GPS ± ft | Shows | Units within the heading |",
+        "|---|---|---|---|---|---|",
+    ]
+    for p in PH:
+        hits = (
+            "; ".join(
+                f"{h['tag']} ({h['off_deg']:+d}°, {h['dist_ft']} ft)" for h in p["hits"]
+            )
+            or "none"
+        )
+        L.append(
+            f"| {p['name']} | {p['time']} | {p['heading']:.0f}° | {p['hacc_m'] / FT:.0f} | "
+            f"{p['subject']} | {hits} |"
+        )
+    L += [
+        "",
+        "## What the photos change",
+        "",
+        "- **RTU-5 candidate confirmed as a unit.** IMG_5256/5257 point straight at it (0° off "
+        "the heading). It sits behind the bridge parapet over the curb canopy.",
+        "- **Lightning protection on the bridge roof.** Air terminals stand on the roof edge next "
+        "to the RTU-5 unit. Ask whether the new units must be bonded to the lightning-protection "
+        "system (NFPA 780): the RFP text does not mention it.",
+        "- **Garage-end bridge unit is a YORK packaged gas/electric RTU** with a unit-mounted "
+        "disconnect and conduit down the cabinet side (IMG_5255). The bearing points at "
+        "candidate B2; B1 is also inside the compass error, and the cabinet size reads closer to "
+        "B1 (13.9 × 11.5 × 6.0 ft) than B2 (9.0 × 7.4 × 3.5 ft). Treat it as B1 or B2.",
+        "- No nameplate is legible from the curb. Tags, voltage, MCA/MOCP still need a roof "
+        "visit (see NEXT_PHOTO_LIST.md).",
+        "",
+    ]
+    open(path, "w").write("\n".join(L))
 
 
 def write_roof_md(A, path):

@@ -313,26 +313,33 @@ def main():
                 .tolist()
             )
             continue
-        xy, z = np.asarray(b["roof_xy"]), np.asarray(b["roof_z"])
         o0 = sum(len(p) for p in P)
-        verts = [np.column_stack([xy, z])]
-        tris = [np.asarray(b["roof_faces"], int).reshape(-1, 3)]
-        kinds = [np.zeros(len(tris[0]), np.uint8)]
-        start, nv = 0, len(xy)
-        for k in [b["n_ring"]] + list(b["hole_rings"]):
-            ids = np.arange(start, start + k)
-            verts.append(np.column_stack([xy[ids], np.full(k, b["base_z"] - 0.3)]))
-            bot = nv + np.arange(k)
-            nxt = np.roll(np.arange(k), -1)
-            tris.append(np.column_stack([ids, ids[nxt], bot[nxt]]))
-            tris.append(np.column_stack([ids, bot[nxt], bot]))
-            kinds += [np.ones(k, np.uint8)] * 2
-            nv += k
-            start += k
-        P.append(np.concatenate(verts))
-        IDX.append(np.concatenate(tris))
-        VO.append(o0)
-        K.append(np.concatenate(kinds))
+        bm = b.get("block_mesh") or {}
+        if bm.get("f"):  # flat roof blocks traced from the lidar (prepare_site.py)
+            P.append(np.asarray(bm["v"], float))
+            IDX.append(np.asarray(bm["f"], int))
+            VO.append(o0)
+            K.append(np.asarray(bm["k"], np.uint8))
+        else:  # lidar-grid roof (elevated structures such as the bridge)
+            xy, z = np.asarray(b["roof_xy"]), np.asarray(b["roof_z"])
+            verts = [np.column_stack([xy, z])]
+            tris = [np.asarray(b["roof_faces"], int).reshape(-1, 3)]
+            kinds = [np.zeros(len(tris[0]), np.uint8)]
+            start, nv = 0, len(xy)
+            for k in [b["n_ring"]] + list(b["hole_rings"]):
+                ids = np.arange(start, start + k)
+                verts.append(np.column_stack([xy[ids], np.full(k, b["base_z"] - 0.3)]))
+                bot = nv + np.arange(k)
+                nxt = np.roll(np.arange(k), -1)
+                tris.append(np.column_stack([ids, ids[nxt], bot[nxt]]))
+                tris.append(np.column_stack([ids, bot[nxt], bot]))
+                kinds += [np.ones(k, np.uint8)] * 2
+                nv += k
+                start += k
+            P.append(np.concatenate(verts))
+            IDX.append(np.concatenate(tris))
+            VO.append(o0)
+            K.append(np.concatenate(kinds))
         binfo.append(
             {
                 "n": b["name"],

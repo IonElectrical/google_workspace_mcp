@@ -1,0 +1,41 @@
+{
+  "note": "Narration may only use measured numbers or labelled estimates. {fields} are filled by export_web.py from viewer_content.json tour_vars.",
+  "stops": [
+    {
+      "id": "welcome",
+      "anchor": "overview",
+      "title": "MHT terminal: what this model is for",
+      "narration": "This is the Manchester-Boston terminal, the pedestrian bridge and the garage at true scale, from the 2019 USGS lidar. We built it to check the electrical routes to the rooftop units: riser heights, roof edges and crane reach. The units are lidar candidates, and the electrical rooms are interior, so they are placeholders only. The main terminal roof is {main_roof} feet above grade."
+    },
+    {
+      "id": "ahu5",
+      "anchor": "site:ahu5",
+      "title": "AHU-5 on the low roof",
+      "narration": "AHU-5 is the 184 ton unit. The largest unit-shaped object on the low valley roof is about {ahu_size} feet. The low roof is {ahu_roof_ft} feet above grade, so the riser to a ground-floor slab is about {ahu_riser} feet, a calculated estimate. That leaves about {ahu_left} feet of your 250 foot assumption for the run from room 1077. The nearest roof drop edge is {ahu_edge} feet away. Three alternate candidates are drawn in grey; confirm the tag on the roof."
+    },
+    {
+      "id": "crane",
+      "anchor": "site:crane",
+      "title": "Crane staging on the ramp",
+      "narration": "The orange pad is a placeholder crane footprint on the ramp, clear of jet bridges in the lidar. From its centre, the pick radius is {crane_r} feet to the AHU-5 candidate and {crane_far} feet to its far corner, for a 57,900 pound unit. Confirm the location with AmeriTech and airport operations."
+    },
+    {
+      "id": "bridge",
+      "anchor": "site:rtu1_4",
+      "title": "RTU-1 to RTU-4 on the bridge",
+      "narration": "The pedestrian bridge is {bridge_len} feet from the garage face to the terminal face, and its roof is {bridge_road} feet above Airport Road. The lidar shows only {n_bridge} unit-sized objects on the bridge roofs for the five RTUs in the bid package, so walk it and tag each one. Risers from the ground-floor room 105 are about {r12_riser} feet. Room 204 is on the bridge level, so its riser is at most {r34_bound} feet."
+    },
+    {
+      "id": "rtu5",
+      "anchor": "site:rtu5",
+      "title": "RTU-5 over the curb roadway",
+      "narration": "RTU-5 sits on the bridge over the curb roadway. Its riser to a ground-floor slab is about {r5_riser} feet. The crane spot on Airport Road is {r5_r} feet from the unit. The red band is a placeholder closure area for the 1:30 to 4 AM window; the road width is not measured."
+    },
+    {
+      "id": "rooms",
+      "anchor": "site:erooms",
+      "title": "Electrical rooms: placeholders",
+      "narration": "These yellow posts are a legend row, not room locations. Rooms 1077, 103, 105 and 204 are interior and not in any public data. Tape or wheel the routes and scan each room with four control points, and the route lengths move from estimate to measured."
+    }
+  ]
+}

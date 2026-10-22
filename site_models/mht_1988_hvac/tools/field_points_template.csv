@@ -1,0 +1,9 @@
+id,type,tag,lat,lon,easting,northing,source,accuracy_ft,notes
+CP1,control,,,,,,phone GPS + photo,15,Control point 1 - e.g. roof corner at the AHU-5 low roof; must also appear in the Polycam scan
+CP2,control,,,,,,phone GPS + photo,15,Control point 2
+CP3,control,,,,,,phone GPS + photo,15,Control point 3
+CP4,control,,,,,,phone GPS + photo,15,Control point 4
+RP-AHU5,roof_penetration,AHU-5,,,,,photo #,15,Feeder roof penetration for AHU-5
+RP-RTU5,roof_penetration,RTU-5,,,,,photo #,15,Feeder roof penetration for RTU-5
+HATCH1,roof_hatch,,,,,,photo #,15,Bridge roof hatch
+DISC-RTU1,disconnect,RTU-1,,,,,photo #,15,Unit disconnect - size and rating from nameplate

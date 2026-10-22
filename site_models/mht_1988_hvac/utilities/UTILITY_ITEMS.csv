@@ -1,0 +1,16 @@
+item_id,type,unit_or_room,location_status,lat,lon,easting_m,northing_m,tag_or_rating,status,confidence,evidence,notes
+F-AHU5,feeder,AHU-5,NOT LOCATED (route interior),,,,,"(2)[3-250 kcmil + 1#2 GND in 3in]; 500A breaker; SWBD E",VERIFIED (bid package single line E-1/E-2 as given by Edward),high,Bid package E-1/E-2,No run length shown in the package
+F-RTU1,branch,RTU-1,NOT LOCATED,,,,,"3#10 + 1#10 in 1in; 25A; panel M3",VERIFIED (bid package),high,Bid package E-1/E-2,
+F-RTU2,branch,RTU-2,NOT LOCATED,,,,,"3#6 + 1#8 in 1in; 60A; panel M3",VERIFIED (bid package),high,Bid package E-1/E-2,
+F-RTU3,branch,RTU-3,NOT LOCATED,,,,,"3#6 + 1#8 in 1in; 60A; panel M2",VERIFIED (bid package),high,Bid package E-1/E-2,
+F-RTU4,branch,RTU-4,NOT LOCATED,,,,,"3#8 + 1#10 in 1in; 45A; panel M2",VERIFIED (bid package),high,Bid package E-1/E-2,
+F-RTU5,branch,RTU-5,NOT LOCATED,,,,,"3#8 + 1#10 in 1in; 40A; panel M1",VERIFIED (bid package),high,Bid package E-1/E-2,
+SWBD-E,switchboard,Room #1077,NOT LOCATED (interior),,,,,SWBD E,VERIFIED (bid package),high,Bid package,"Voltage, phase, bus rating: read nameplate"
+RM-1076,electrical_room,Room #1076,NOT LOCATED (interior),,,,,,VERIFIED (bid package),high,Bid package,Terminal main electrical room
+P-M1,panel,Room #103,NOT LOCATED (interior),,,,,Panel M1,VERIFIED (bid package),high,Bid package,Feeds RTU-5
+P-M2,panel,Room #204,NOT LOCATED (interior),,,,,Panel M2,VERIFIED (bid package),high,Bid package,Feeds RTU-3 and RTU-4; bridge level
+P-M3,panel,Room #105,NOT LOCATED (interior),,,,,Panel M3,VERIFIED (bid package),high,Bid package,Feeds RTU-1 and RTU-2
+U-AHU5,rooftop_unit,AHU-5,LIDAR CANDIDATE,42.927379,-71.438307,301019.3,4755635.0,"184 tons; ~57,900 lb",INFERRED (largest unit-shaped object on the low roof),medium,2019 USGS lidar NH_Coastal_2_2019,"60.5 x 18.9 x 13.0 ft by lidar; three alternates in docs/SITE_LAYOUTS.md"
+U-RTU5,rooftop_unit,RTU-5,LIDAR CANDIDATE,42.928048,-71.438018,301045.0,4755708.6,12.5 tons,INFERRED (unit-shaped object on the bridge nearest Airport Road),medium,2019 USGS lidar,Nameplate unread
+U-B1,rooftop_unit,one of RTU-1 to RTU-4,LIDAR CANDIDATE,42.928502,-71.439541,300922.2,4755762.6,,INFERRED,low,2019 USGS lidar,13.9 x 11.5 x 6.0 ft; garage-end head of the bridge
+U-B2,rooftop_unit,one of RTU-1 to RTU-4,LIDAR CANDIDATE,42.928438,-71.439274,300943.8,4755754.8,,INFERRED,low,2019 USGS lidar,9.0 x 7.4 x 3.5 ft

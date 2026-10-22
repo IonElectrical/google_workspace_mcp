@@ -1,0 +1,7 @@
+# Google 3D Tiles copies are visual only and must never be committed
+*_google.blend
+*.blend1
+__pycache__/
+CACHE/
+WORK/
+.ruff_cache/

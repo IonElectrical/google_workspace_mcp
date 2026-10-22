@@ -77,10 +77,11 @@ The centre was resolved from the data, not typed in: it is the centroid of the O
 
 3. **Only 3 unit-sized objects show on the bridge roofs for the 5 RTUs in the bid package.**
    - RTU-5 candidate: 10.7 × 9.8 × 5.6 ft, at the terminal end.
-   - B1: 13.9 × 11.5 × 6.0 ft, at the garage-end head house.
-   - B2: 9.0 × 7.4 × 3.5 ft.
-   - The black EPDM returned lidar on only 61 % of cells, so small units can hide in dropouts.
-   - Tags RTU-1 to RTU-4 can't be told apart from lidar. **Shoot every nameplate in place; RTU-5's was unread.**
+   - B1: 13.9 × 11.5 × 6.0 ft, at the garage-end head house, now tagged **RTU-2**.
+   - B2: 9.0 × 7.4 × 3.5 ft, now tagged **RTU-1**.
+   - Tags come from the pre-bid meeting (the airport put RTU-1/2 at the garage end, RTU-3/4 mid-bridge, RTU-5 on the escalator/elevator building) plus size (20 t vs 6 t). Set in `job_config.py` → `BRIDGE_UNIT_TAGS`.
+   - RTU-3 and RTU-4 are not in the lidar: the black EPDM returned lidar on only 61 % of cells.
+   - **No nameplate has been read yet.** See `docs/HANDOFF.md` for where things stand.
 
 4. **Bridge geometry (measured):**
    - 359 ft from the garage face to the terminal face; deck roof 38 ft wide.

@@ -488,9 +488,22 @@ def main():
             12.5,
         )
     )
+    tags = getattr(C, "BRIDGE_UNIT_TAGS", {})
     for k, o in enumerate(others, start=1):
-        units.append(
-            unit_rec(
+        t = tags.get(f"B{k}")
+        if t:
+            rec = unit_rec(
+                t["tag"],
+                o,
+                f"LIDAR CANDIDATE B{k}, TAGGED BY POSITION AND SIZE ({t['basis']}); "
+                "nameplate not read",
+                "Numbered from the garage end. RTU-1 (6 t) and RTU-2 (20 t) feed from #105 (M3); "
+                "RTU-3 and RTU-4 (20 t) from #204 (M2).",
+                t["room"],
+                t["tons"],
+            )
+        else:
+            rec = unit_rec(
                 f"Bridge unit B{k}",
                 o,
                 "LIDAR CANDIDATE for one of RTU-1 to RTU-4; tag not known",
@@ -499,7 +512,8 @@ def main():
                 None,
                 None,
             )
-        )
+        rec["cand"] = f"B{k}"
+        units.append(rec)
 
     # ---- bridge facts
     bridge = {
@@ -569,9 +583,12 @@ def main():
         rm = rooms[f["room"]]
         r = {"unit": f["unit"], "room": f["room"], "room_label": rm["label"], **f}
         if f["room"] == "erm_204":
-            cand = [x for x in units if x["tag"].startswith("Bridge unit")]
+            cand = [x for x in units if "cand" in x]
             roof = [x["roof_z_m"] for x in cand]
-            r["unit_located"] = "one of " + ", ".join(x["tag"] for x in cand)
+            r["unit_located"] = (
+                "NOT SEEN in the 2019 lidar (mid-bridge per the airport); riser bound from "
+                "the bridge-roof units " + ", ".join(x["tag"] for x in cand)
+            )
             r["riser_ft"] = None
             r["riser_bound_ft"] = ft(max(roof) - road_z - 14.5 * FT)
             r["riser_method"] = (
@@ -581,7 +598,7 @@ def main():
             )
         else:
             if u_ is None:
-                cand = [x for x in units if x["tag"].startswith("Bridge unit")]
+                cand = [x for x in units if "cand" in x]
                 roof = [x["roof_z_m"] for x in cand]
                 r["unit_located"] = "one of " + ", ".join(x["tag"] for x in cand)
                 lo, hi = min(roof) - grade, max(roof) - grade
@@ -620,7 +637,7 @@ def main():
             if u_
             else (
                 np.mean(
-                    [x["xy"] for x in units if x["tag"].startswith("Bridge unit")],
+                    [x["xy"] for x in units if "cand" in x],
                     axis=0,
                 )
             ).tolist()
@@ -739,7 +756,7 @@ def main():
         "method": "CALCULATED ESTIMATE: crane spot = nearest point on the Airport Road centreline "
         "(OSM) at least 13 ft clear of the bridge outline; closure band = 150 ft each way along the "
         "centreline, 40 ft wide (roadway width NOT measured; replace with the MOT plan). Night work "
-        "1:30 to 4:00 AM per the bid package.",
+        "1:30 to 4:00 AM per the bid package (1:00 to 4:00 AM said at the pre-bid meeting).",
     }
 
     # alternates as records for the docs

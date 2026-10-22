@@ -128,7 +128,8 @@ SITES = [
         "where": "Bridge roof over the terminal curb roadway",
         "kind": "roof_unit",
         "units": [{"tag": "RTU-5", "tons": 12.5, "room": "erm_103"}],
-        "notes": "Replaced at night with Airport Road closure 1:30 to 4:00 AM.",
+        "notes": "Replaced at night with Airport Road closure 1:30 to 4:00 AM (bid package; "
+        "1:00 to 4:00 AM said at the pre-bid meeting).",
         "lay_out": "unit spot, crane pick zone, road closure area",
     },
     {
@@ -236,7 +237,38 @@ KNOWN_FACTS = [
     ("AHU-5 roof", "light gray TPO, 1998", "bid package"),
     ("Bridge roof (RTU-1 to RTU-4)", "black EPDM, 2000", "bid package"),
     ("RTU-5 night work", "Airport Road closure 1:30 to 4:00 AM", "bid package"),
+    ("RTU-5 night work", "1:00 to 4:00 AM", "pre-bid meeting 2026-10-22 (verbal)"),
+    (
+        "RTU positions",
+        "RTU-1/2 garage end, RTU-3/4 mid-bridge, RTU-5 escalator/elevator "
+        "building at the terminal end; all York, 2000",
+        "pre-bid meeting and walk 2026-10-22",
+    ),
+    (
+        "Roof heights",
+        "high roof 34-35 ft, valley about 18 ft",
+        "pre-bid meeting 2026-10-22",
+    ),
 ]
+
+# Lidar candidates on the bridge (numbered from the garage end) tagged from the pre-bid
+# meeting: the airport put RTU-1 and RTU-2 at the garage end and RTU-3/4 mid-bridge; of the
+# two garage-end units the larger is the 20-ton RTU-2 (60 A feeder), the smaller the 6-ton
+# RTU-1 (25 A). Nameplates still unread: retag here if the roof visit says otherwise.
+BRIDGE_UNIT_TAGS = {
+    "B1": {
+        "tag": "RTU-2",
+        "tons": 20,
+        "room": "erm_105",
+        "basis": "garage end per the airport, larger of the two",
+    },
+    "B2": {
+        "tag": "RTU-1",
+        "tons": 6,
+        "room": "erm_105",
+        "basis": "garage end per the airport, smaller of the two",
+    },
+}
 
 # --------------------------------------------------------------------------- analysis
 ANALYSIS = {

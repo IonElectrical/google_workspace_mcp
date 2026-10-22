@@ -12,7 +12,7 @@ Built 2026-10-22 from the 2019 USGS lidar (15.22 pts/m²) and the USGS 1 m DEM. 
 |---|---|---|
 | 250 ft from #1077 | AHU-5 | Riser 18.9 ft (CALC. EST.). Leaves 231 ft for the room-to-riser run and roof run. The farthest terminal corner is 573 ft from the unit in plan, so 250 ft is possible but not checkable until #1077 is located. |
 | 120 ft from #103 | RTU-5 | Riser 33.2 ft (bridge roof over Airport Road). Leaves 87 ft. |
-| 120 ft from #105 | RTU-1, RTU-2 | Riser 26.5–28.0 ft depending on which bridge candidate is which. Leaves about 92 ft. |
+| 120 ft from #105 | RTU-1, RTU-2 | RTU-1 riser 28.0 ft, RTU-2 riser 26.5 ft (candidates tagged by position and size; nameplates unread). Leaves about 92 ft. |
 | 60 ft from #204 | RTU-3, RTU-4 | #204 is on the bridge level; its floor is not visible to lidar. Riser is at most 14 ft. Leaves at least 46 ft along the bridge. The bridge is 359 ft face to face. |
 
 ## Per unit
@@ -20,10 +20,10 @@ Built 2026-10-22 from the 2019 USGS lidar (15.22 pts/m²) and the USGS 1 m DEM. 
 | Unit | Feeder (E-1/E-2) | From | Unit position | Horizontal run, room to riser | Riser height | Roof run, penetration to unit | Total |
 |---|---|---|---|---|---|---|---|
 | AHU-5 | (2)[3-250 kcmil + 1#2 GND in 3in], 500A | Terminal Main Electrical Room #1077 (SWBD E) | AHU-5 (LIDAR CANDIDATE) | NOT MEASURED: room interior, not in public data | 18.9 ft, CALCULATED ESTIMATE | NOT MEASURED: penetration not located | CALCULATED ESTIMATE pending; your assumption 250 ft |
-| RTU-1 | 3#10 + 1#10 in 1in, 25A | Ground Floor Electrical Room #105 (panel M3) | one of Bridge unit B1, Bridge unit B2 | NOT MEASURED: room interior, not in public data | 26.5–28.0 ft, CALCULATED ESTIMATE | NOT MEASURED: penetration not located | CALCULATED ESTIMATE pending; your assumption 120 ft |
-| RTU-2 | 3#6 + 1#8 in 1in, 60A | Ground Floor Electrical Room #105 (panel M3) | one of Bridge unit B1, Bridge unit B2 | NOT MEASURED: room interior, not in public data | 26.5–28.0 ft, CALCULATED ESTIMATE | NOT MEASURED: penetration not located | CALCULATED ESTIMATE pending; your assumption 120 ft |
-| RTU-3 | 3#6 + 1#8 in 1in, 60A | Pedestrian Bridge Electrical Room #204 (panel M2) | one of Bridge unit B1, Bridge unit B2 | NOT MEASURED: room interior, not in public data | ≤ 14.2 ft (bound), CALCULATED ESTIMATE | NOT MEASURED: penetration not located | CALCULATED ESTIMATE pending; your assumption 60 ft |
-| RTU-4 | 3#8 + 1#10 in 1in, 45A | Pedestrian Bridge Electrical Room #204 (panel M2) | one of Bridge unit B1, Bridge unit B2 | NOT MEASURED: room interior, not in public data | ≤ 14.2 ft (bound), CALCULATED ESTIMATE | NOT MEASURED: penetration not located | CALCULATED ESTIMATE pending; your assumption 60 ft |
+| RTU-1 | 3#10 + 1#10 in 1in, 25A | Ground Floor Electrical Room #105 (panel M3) | RTU-1 (LIDAR CANDIDATE B2, TAGGED BY POSITION AND SIZE) | NOT MEASURED: room interior, not in public data | 28.0 ft, CALCULATED ESTIMATE | NOT MEASURED: penetration not located | CALCULATED ESTIMATE pending; your assumption 120 ft |
+| RTU-2 | 3#6 + 1#8 in 1in, 60A | Ground Floor Electrical Room #105 (panel M3) | RTU-2 (LIDAR CANDIDATE B1, TAGGED BY POSITION AND SIZE) | NOT MEASURED: room interior, not in public data | 26.5 ft, CALCULATED ESTIMATE | NOT MEASURED: penetration not located | CALCULATED ESTIMATE pending; your assumption 120 ft |
+| RTU-3 | 3#6 + 1#8 in 1in, 60A | Pedestrian Bridge Electrical Room #204 (panel M2) | NOT SEEN in the 2019 lidar (mid-bridge per the airport); riser bound from the bridge-roof units RTU-2, RTU-1 | NOT MEASURED: room interior, not in public data | ≤ 14.2 ft (bound), CALCULATED ESTIMATE | NOT MEASURED: penetration not located | CALCULATED ESTIMATE pending; your assumption 60 ft |
+| RTU-4 | 3#8 + 1#10 in 1in, 45A | Pedestrian Bridge Electrical Room #204 (panel M2) | NOT SEEN in the 2019 lidar (mid-bridge per the airport); riser bound from the bridge-roof units RTU-2, RTU-1 | NOT MEASURED: room interior, not in public data | ≤ 14.2 ft (bound), CALCULATED ESTIMATE | NOT MEASURED: penetration not located | CALCULATED ESTIMATE pending; your assumption 60 ft |
 | RTU-5 | 3#8 + 1#10 in 1in, 40A | Ground Floor Electrical Room #103 (panel M1) | RTU-5 (LIDAR CANDIDATE) | NOT MEASURED: room interior, not in public data | 33.2 ft, CALCULATED ESTIMATE | NOT MEASURED: penetration not located | CALCULATED ESTIMATE pending; your assumption 120 ft |
 
 ## Method

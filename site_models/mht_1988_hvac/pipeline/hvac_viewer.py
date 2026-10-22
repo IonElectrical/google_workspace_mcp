@@ -92,7 +92,11 @@ def unit_box(u, mat="unit", tag="e"):
         "info": info(
             u["tag"], rows, u["confidence"] + ". " + (u.get("note") or ""), tag
         ),
-        "label": f"{u['tag'].replace('Bridge unit ', '')} · lidar candidate",
+        "label": (
+            f"{u['tag']} ({u['cand']}) · tagged by position"
+            if "cand" in u and not u["tag"].startswith("Bridge unit")
+            else f"{u['tag'].replace('Bridge unit ', '')} · lidar candidate"
+        ),
         "la": [round(float(c[0]), 2), round(float(c[1]), 2), u["roof_z_m"] + H + 2.5],
         "lk": "est",
         "lmax": 450,
@@ -240,7 +244,7 @@ def main():
     grade = A["grade_m"]
     U = {u["tag"]: u for u in A["units"]}
     ahu, r5 = U["AHU-5"], U["RTU-5"]
-    bunits = [u for u in A["units"] if u["tag"].startswith("Bridge unit")]
+    bunits = [u for u in A["units"] if "cand" in u]
     R = {r["unit"]: r for r in A["routes"]}
     br = A["bridge"]
     cr, c5 = A["crane_ahu5"], A["crane_rtu5"]
@@ -467,8 +471,11 @@ def main():
             "RTU-3 and RTU-4 from panel M2 in bridge room #204.",
             "alerts": [
                 f"The lidar shows only {len(bunits) + 1} unit-sized objects on the bridge roofs for the 5 RTUs in the bid package "
-                "(RTU-1 to RTU-5). Tags cannot be read from lidar: candidates are numbered B1, B2 from the garage end. "
-                "Black EPDM returned few lidar points (61 % cell cover), so small units can hide in dropouts. Confirm every spot on site."
+                "(RTU-1 to RTU-5). At the pre-bid meeting the airport put RTU-1 and RTU-2 at the garage end, RTU-3 and RTU-4 "
+                "mid-bridge and RTU-5 on the escalator/elevator building, all York units from 2000. The two garage-end "
+                "candidates are tagged by that position and by size (larger = 20-ton RTU-2, smaller = 6-ton RTU-1); "
+                "nameplates are not read. RTU-3 and RTU-4 are NOT in the 2019 lidar: black EPDM returned few points "
+                "(61 % cell cover), so they likely sit in dropouts. Confirm every spot on site."
             ],
             "facts": rows,
             "features": feats,
@@ -491,12 +498,15 @@ def main():
                 [
                     ["Length along centreline", f"{f1(c5['closure_length_ft'], 0)} ft"],
                     ["Width", "40 ft (road width NOT measured)"],
-                    ["Window", "1:30 to 4:00 AM"],
+                    [
+                        "Window",
+                        "1:30 to 4:00 AM (bid package); 1:00 to 4:00 AM said at the pre-bid",
+                    ],
                 ],
                 c5["method"],
                 "e",
             ),
-            "label": "Airport Road closure (est.) · 1:30–4:00 AM",
+            "label": "Airport Road closure (est.) · 1:00/1:30–4:00 AM",
             "la": [*np.asarray(c5["closure_ring"]).mean(0).tolist(), None],
             "lk": "est",
             "lmax": 400,
@@ -549,7 +559,7 @@ def main():
             "title": "RTU-5 · bridge over the curb roadway",
             "button": "RTU-5",
             "addr": "Bridge roof over the terminal curb roadway (Airport Road)",
-            "rationale": "12.5 tons. Replaced at night with Airport Road closed 1:30 to 4:00 AM. Feeder 3#8 + 1#10 in 1in, 40A, panel M1 in room #103.",
+            "rationale": "12.5 tons. Replaced at night with Airport Road closed 1:30 to 4:00 AM (bid package; 1:00 AM start said at the pre-bid). Feeder 3#8 + 1#10 in 1in, 40A, panel M1 in room #103.",
             "alerts": [
                 "Unit position is a LIDAR CANDIDATE (the unit-shaped object on the bridge nearest Airport Road). The nameplate was not read; confirm on site."
             ],
@@ -859,7 +869,8 @@ def main():
         "r5_r": f1(c5["pick_radius_ft"], 0),
         "r12_riser": f"{R['RTU-1']['riser_ft'][0]:.0f} to {R['RTU-1']['riser_ft'][1]:.0f}"
         if isinstance(R["RTU-1"]["riser_ft"], list)
-        else "n/a",
+        else f"{min(R['RTU-1']['riser_ft'], R['RTU-2']['riser_ft']):.0f} to "
+        f"{max(R['RTU-1']['riser_ft'], R['RTU-2']['riser_ft']):.0f}",
         "r34_bound": f1(R["RTU-3"]["riser_bound_ft"], 0),
         "main_roof": f1(uc["lidar_main_roof_above_grade_ft"], 0),
     }
@@ -970,7 +981,7 @@ def write_site_md(A, meta, path):
         f"| AHU-5 (57,900 lb, daylight) | 36 × 36 ft pad on the ramp, model X, Y {cr['pad_xy'][0]:.1f}, {cr['pad_xy'][1]:.1f} | {cr['pick_radius_center_ft']} ft to unit centre, {cr['pick_radius_far_corner_ft']} ft to far corner | low roof {cr['pick_height_above_ramp_ft']} ft above ramp | {cr['method']} |"
     )
     w(
-        f"| RTU-5 (night, Airport Road closed 1:30–4:00 AM) | Airport Road centreline, model X, Y {c5['spot_xy'][0]:.1f}, {c5['spot_xy'][1]:.1f} | {c5['pick_radius_ft']} ft | bridge roof {c5['pick_height_above_road_ft']} ft above road | {c5['method']} |"
+        f"| RTU-5 (night, Airport Road closed 1:30–4:00 AM; 1:00 AM start said at the pre-bid) | Airport Road centreline, model X, Y {c5['spot_xy'][0]:.1f}, {c5['spot_xy'][1]:.1f} | {c5['pick_radius_ft']} ft | bridge roof {c5['pick_height_above_road_ft']} ft above road | {c5['method']} |"
     )
     w("")
     w(
@@ -1015,9 +1026,11 @@ def write_photo_md(C, PH, path):
         "to the RTU-5 unit. Ask whether the new units must be bonded to the lightning-protection "
         "system (NFPA 780): the RFP text does not mention it.",
         "- **Garage-end bridge unit is a YORK packaged gas/electric RTU** with a unit-mounted "
-        "disconnect and conduit down the cabinet side (IMG_5255). The bearing points at "
-        "candidate B2; B1 is also inside the compass error, and the cabinet size reads closer to "
-        "B1 (13.9 × 11.5 × 6.0 ft) than B2 (9.0 × 7.4 × 3.5 ft). Treat it as B1 or B2.",
+        "disconnect and conduit down the cabinet side (IMG_5255). The airport says all five "
+        "bridge RTUs are York units from 2000 and RTU-1/2 are at the garage end. The bearing "
+        "points at candidate B2 (tagged RTU-1); B1 (RTU-2) is also inside the compass error, and "
+        "the cabinet size reads closer to B1 (13.9 × 11.5 × 6.0 ft) than B2 (9.0 × 7.4 × 3.5 ft). "
+        "Treat it as RTU-1 or RTU-2.",
         "- No nameplate is legible from the curb. Tags, voltage, MCA/MOCP still need a roof "
         "visit (see NEXT_PHOTO_LIST.md).",
         "",
@@ -1098,7 +1111,7 @@ def write_route_md(A, C, meta, path):
         f"| 120 ft from #103 | RTU-5 | Riser {rs(R['RTU-5'])} (bridge roof over Airport Road). Leaves {R['RTU-5']['left_for_horizontal_and_roof_ft']:.0f} ft. |"
     )
     w(
-        f"| 120 ft from #105 | RTU-1, RTU-2 | Riser {rs(R['RTU-1'])} depending on which bridge candidate is which. Leaves about {R['RTU-1']['left_for_horizontal_and_roof_ft']:.0f} ft. |"
+        f"| 120 ft from #105 | RTU-1, RTU-2 | RTU-1 riser {rs(R['RTU-1'])}, RTU-2 riser {rs(R['RTU-2'])} (candidates tagged by position and size; nameplates unread). Leaves about {R['RTU-1']['left_for_horizontal_and_roof_ft']:.0f} ft. |"
     )
     w(
         f"| 60 ft from #204 | RTU-3, RTU-4 | #204 is on the bridge level; its floor is not visible to lidar. Riser is at most {R['RTU-3']['riser_bound_ft']:.0f} ft. Leaves at least {R['RTU-3']['left_for_horizontal_and_roof_ft']:.0f} ft along the bridge. The bridge is {A['bridge']['length_ft']:.0f} ft face to face. |"
